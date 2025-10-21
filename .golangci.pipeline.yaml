@@ -1,0 +1,56 @@
+version: "2"
+run:
+  concurrency: 8
+  issues-exit-code: 1
+  tests: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  default: none
+  enable:
+    - errcheck
+    - goconst
+    - gosec
+    - govet
+    - ineffassign
+    - revive
+    - unused
+  settings:
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+  exclusions:
+    generated: lax
+    rules:
+      - path: (.+)\.go$
+        text: G104
+      - path: (.+)\.go$
+        text: exported func .* returns unexported type .*, which can be annoying to use
+      - path: (.+)\.go$
+        text: should have a package comment
+      - path: (.+)\.go$
+        text: don't use an underscore in package name
+    paths:
+      - \.pb\.go$
+      - \.pb\.gw\.go$
+      - bin
+      - vendor
+      - var
+      - tmp
+      - .cache
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
