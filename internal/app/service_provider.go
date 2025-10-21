@@ -4,30 +4,20 @@ import (
 	"context"
 	"log"
 
-	"github.com/vp-go-micro/go-auth/internal/client/db"
-	"github.com/vp-go-micro/go-auth/internal/client/db/pg"
-	"github.com/vp-go-micro/go-auth/internal/client/db/transaction"
+	"github.com/mrVoldemar/crm_backend/internal/client/db"
+	"github.com/mrVoldemar/crm_backend/internal/client/db/pg"
+	"github.com/mrVoldemar/crm_backend/internal/client/db/transaction"
 
-	"github.com/vp-go-micro/go-auth/internal/api/user"
-	"github.com/vp-go-micro/go-auth/internal/config"
-	"github.com/vp-go-micro/go-auth/internal/config/env"
-	"github.com/vp-go-micro/go-auth/internal/repository"
-	userRepository "github.com/vp-go-micro/go-auth/internal/repository/user"
-	"github.com/vp-go-micro/go-auth/internal/service"
-	userService "github.com/vp-go-micro/go-auth/internal/service/user"
+	"github.com/mrVoldemar/crm_backend/internal/config"
+	"github.com/mrVoldemar/crm_backend/internal/config/env"
 )
 
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
-	userRepository repository.UserRepository
-
-	userService service.UserService
-
-	userImpl *user.Implementation
+	dbClient  db.Client
+	txManager db.TxManager
 }
 
 func newServiceProvider() *serviceProvider {
@@ -79,25 +69,4 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	}
 
 	return s.txManager
-}
-
-func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
-	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
-	}
-	return s.userRepository
-}
-
-func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
-	if s.userService == nil {
-		s.userService = userService.NewService(s.UserRepository(ctx), s.TxManager(ctx))
-	}
-	return s.userService
-}
-
-func (s *serviceProvider) UserImpl(ctx context.Context) *user.Implementation {
-	if s.userImpl == nil {
-		s.userImpl = user.NewImplementation(s.UserService(ctx))
-	}
-	return s.userImpl
 }

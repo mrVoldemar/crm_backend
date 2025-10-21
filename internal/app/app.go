@@ -6,10 +6,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/vp-go-micro/go-auth/internal/closer"
-	"github.com/vp-go-micro/go-auth/internal/config"
+	"github.com/mrVoldemar/crm_backend/internal/closer"
+	"github.com/mrVoldemar/crm_backend/internal/config"
 
-	userDesc "github.com/vp-go-micro/go-auth/pkg/user_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -80,7 +79,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	userDesc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
+	//userDesc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
 
 	return nil
 }
