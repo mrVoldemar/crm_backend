@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package employee;
+option go_package = "./api";
+
+// Employee service for managing employee information
+service EmployeeService {
+  rpc CreateEmployee(CreateEmployeeRequest) returns (CreateEmployeeResponse);
+  rpc GetEmployee(GetEmployeeRequest) returns (GetEmployeeResponse);
+  rpc UpdateEmployee(UpdateEmployeeRequest) returns (UpdateEmployeeResponse);
+  rpc DeleteEmployee(DeleteEmployeeRequest) returns (DeleteEmployeeResponse);
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+}
+
+// Section 1: Basic Information
+message Employee {
+  // Section 4: System Information
+  string id = 1;
+  string system_user_id = 2; // System user (binding to user account in the system)
+  Role system_role = 3; // Role in the system
+  repeated Permission permissions = 4; // Access permissions
+  string created_at = 5; // Record creation date
+  string updated_at = 6; // Last modification date
+
+  // Section 1: Basic Information
+  string first_name = 7; // First name (required)
+  string last_name = 8; // Last name (required)
+  string middle_name = 9; // Middle name
+  string date_of_birth = 10; // Date of birth
+  Gender gender = 11; // Gender: [Male | Female]
+  string photo = 12; // Photo (avatar)
+
+  // Section 2: Work Information
+  string position = 13; // Position (required)
+  Department department = 14; // Department (required, with hierarchy support)
+  string manager_id = 15; // Manager (link to another employee)
+  string hire_date = 16; // Employment date
+  EmploymentStatus status = 17; // Employee status: [Active | Terminated | On Leave | Absent]
+  string work_phone = 18; // Work phone (internal)
+  string work_email = 19; // Work email (required)
+
+  // Section 3: Contact Information
+  string personal_phone = 20; // Personal phone
+  string personal_email = 21; // Personal email
+  string home_address = 22; // Home address
+  string corporate_mobile = 23; // Corporate mobile phone (if issued)
+
+  // Section 5: Additional Information
+  string comment = 24; // Comment (for internal notes)
+}
+
+// Gender enumeration
+enum Gender {
+  GENDER_UNSPECIFIED = 0;
+  GENDER_MALE = 1; // Male
+  GENDER_FEMALE = 2; // Female
+}
+
+// Employment status enumeration
+enum EmploymentStatus {
+  EMPLOYMENT_STATUS_UNSPECIFIED = 0;
+  EMPLOYMENT_STATUS_ACTIVE = 1; // Active
+  EMPLOYMENT_STATUS_TERMINATED = 2; // Terminated
+  EMPLOYMENT_STATUS_ON_LEAVE = 3; // On Leave
+  EMPLOYMENT_STATUS_ABSENT = 4; // Absent
+}
+
+// Role enumeration
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_ADMINISTRATOR = 1; // Administrator
+  ROLE_MANAGER = 2; // Manager
+  ROLE_SUPERVISOR = 3; // Supervisor
+  ROLE_EMPLOYEE = 4; // Employee
+}
+
+// Permission for access control
+message Permission {
+  string resource = 1; // Resource name
+  repeated string actions = 2; // Allowed actions (read, write, delete, etc.)
+}
+
+// Department with hierarchy support
+message Department {
+  string id = 1;
+  string name = 2;
+  string parent_department_id = 3; // For hierarchy support
+  repeated Department sub_departments = 4;
+}
+
+// Request/Response messages
+message CreateEmployeeRequest {
+  Employee employee = 1;
+}
+
+message CreateEmployeeResponse {
+  Employee employee = 1;
+}
+
+message GetEmployeeRequest {
+  string id = 1;
+}
+
+message GetEmployeeResponse {
+  Employee employee = 1;
+}
+
+message UpdateEmployeeRequest {
+  Employee employee = 1;
+}
+
+message UpdateEmployeeResponse {
+  Employee employee = 1;
+}
+
+message DeleteEmployeeRequest {
+  string id = 1;
+}
+
+message DeleteEmployeeResponse {
+  bool success = 1;
+}
+
+message ListEmployeesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+}
+
+message ListEmployeesResponse {
+  repeated Employee employees = 1;
+  string next_page_token = 2;
+}
