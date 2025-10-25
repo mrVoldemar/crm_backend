@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/auth"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/errors"
 )
 
 // AuthMiddleware handles authentication and authorization
@@ -27,19 +28,19 @@ func (am *AuthMiddleware) AuthRequired(next http.HandlerFunc) http.HandlerFunc {
 		// to validate the token provided in the Authorization header
 		token := r.Header.Get("Authorization")
 		if token == "" {
-			http.Error(w, "Missing authorization token", http.StatusUnauthorized)
+			errors.WriteError(w, http.StatusUnauthorized, "Missing authorization token")
 			return
 		}
 
 		// Call auth service to validate token
 		valid, userID, err := am.authServiceClient.ValidateToken(r.Context(), token)
 		if err != nil {
-			http.Error(w, "Error validating token", http.StatusInternalServerError)
+			errors.WriteError(w, http.StatusInternalServerError, "Error validating token")
 			return
 		}
 
 		if !valid {
-			http.Error(w, "Invalid authorization token", http.StatusUnauthorized)
+			errors.WriteError(w, http.StatusUnauthorized, "Invalid authorization token")
 			return
 		}
 
@@ -48,10 +49,3 @@ func (am *AuthMiddleware) AuthRequired(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
-
-// validateToken would call the auth service to validate the token
-// func (am *AuthMiddleware) validateToken(token string) (bool, string, error) {
-// 	// This would make an HTTP/gRPC call to the auth service
-// 	// For now, returning a placeholder
-// 	return true, "user123", nil
-// }

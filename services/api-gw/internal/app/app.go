@@ -2,15 +2,23 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/closer"
 	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/config"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/config/services"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/cors"
 	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/handlers"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/logger"
 	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/middleware"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/ratelimit"
+	"github.com/mrVoldemar/crm_backend/services/api-gw/internal/recovery"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -65,10 +73,14 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-var configPath string
+var (
+	configPath     string
+	servicesConfig string
+)
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+	flag.StringVar(&servicesConfig, "services-config", "config/services.json", "path to services config file")
 }
 
 func (a *App) initConfig(_ context.Context) error {
@@ -88,11 +100,20 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initHTTPServer(_ context.Context) error {
+	// Load services configuration
+	serviceConfig, err := loadServicesConfig(servicesConfig)
+	if err != nil {
+		return err
+	}
+
 	// Create auth middleware
 	authMiddleware := middleware.NewAuthMiddleware(a.serviceProvider.GRPCConfig().AuthServiceURL())
 
+	// Create rate limiter (100 requests per minute)
+	rateLimiter := ratelimit.NewRateLimiter(100, time.Minute)
+
 	// Create API handler
-	apiHandler, err := handlers.NewAPIHandler(authMiddleware)
+	apiHandler, err := handlers.NewAPIHandler(authMiddleware, rateLimiter, serviceConfig)
 	if err != nil {
 		return err
 	}
@@ -101,10 +122,16 @@ func (a *App) initHTTPServer(_ context.Context) error {
 	mux := http.NewServeMux()
 	apiHandler.RegisterRoutes(mux)
 
+	// Wrap with middleware
+	var handler http.Handler = mux
+	handler = recovery.RecoveryMiddleware(handler)
+	handler = logger.LoggingMiddleware(handler)
+	handler = cors.CORSHeaders(handler)
+
 	// Create HTTP server
 	a.httpServer = &http.Server{
 		Addr:    ":8080",
-		Handler: mux,
+		Handler: handler,
 	}
 
 	return nil
@@ -145,4 +172,22 @@ func (a *App) runHTTPServer() error {
 	}
 
 	return nil
+}
+
+func loadServicesConfig(filePath string) (*services.Config, error) {
+	// Open config file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Parse JSON
+	config := &services.Config{}
+	err = json.NewDecoder(file).Decode(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
