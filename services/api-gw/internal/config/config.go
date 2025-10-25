@@ -15,6 +15,7 @@ func Load(path string) error {
 
 type GRPCConfig interface {
 	GRPCAddress() string
+	AuthServiceURL() string
 }
 
 type PGConfig interface {
