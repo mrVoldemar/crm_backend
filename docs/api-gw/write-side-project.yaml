@@ -1,0 +1,6 @@
+project:
+  id: api-gw-service
+  name: API Gateway Service
+  description: Сервис API Gateway для CRM-системы
+  langs: [ru]
+  author: Lingma
