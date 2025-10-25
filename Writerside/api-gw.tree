@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="api-gw"
+                 name="ApiGateway" start-page="configuration.md">
+
+    <toc-element topic="middleware.md"/>
+    <toc-element topic="introduction.md"/>
+    <toc-element topic="proxy.md"/>
+    <toc-element topic="endpoints.md"/>
+    <toc-element topic="configuration.md"/>
+    <toc-element topic="deployment.md"/>
+</instance-profile>
