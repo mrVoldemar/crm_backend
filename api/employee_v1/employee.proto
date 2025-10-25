@@ -2,14 +2,37 @@ syntax = "proto3";
 
 package employee;
 option go_package = "./api";
+import "google/api/annotations.proto";
 
 // Employee service for managing employee information
 service EmployeeService {
-  rpc CreateEmployee(CreateEmployeeRequest) returns (CreateEmployeeResponse);
-  rpc GetEmployee(GetEmployeeRequest) returns (GetEmployeeResponse);
-  rpc UpdateEmployee(UpdateEmployeeRequest) returns (UpdateEmployeeResponse);
-  rpc DeleteEmployee(DeleteEmployeeRequest) returns (DeleteEmployeeResponse);
-  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+  rpc CreateEmployee(CreateEmployeeRequest) returns (CreateEmployeeResponse) {
+    option (google.api.http) = {
+      post: "/v1/employees"
+      body: "employee"
+    };
+  }
+  rpc GetEmployee(GetEmployeeRequest) returns (GetEmployeeResponse) {
+    option (google.api.http) = {
+      get: "/v1/employees/{id}"
+    };
+  }
+  rpc UpdateEmployee(UpdateEmployeeRequest) returns (UpdateEmployeeResponse) {
+    option (google.api.http) = {
+      patch: "/v1/employees/{employee.id}"
+      body: "employee"
+    };
+  }
+  rpc DeleteEmployee(DeleteEmployeeRequest) returns (DeleteEmployeeResponse) {
+    option (google.api.http) = {
+      delete: "/v1/employees/{id}"
+    };
+  }
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse) {
+    option (google.api.http) = {
+      get: "/v1/employees"
+    };
+  }
 }
 
 // Section 1: Basic Information
