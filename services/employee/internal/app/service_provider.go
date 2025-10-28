@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/mrVoldemar/crm_backend/internal/client/db"
-	"github.com/mrVoldemar/crm_backend/internal/client/db/pg"
-	"github.com/mrVoldemar/crm_backend/internal/client/db/transaction"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db/pg"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db/transaction"
 
-	"github.com/mrVoldemar/crm_backend/internal/config"
-	"github.com/mrVoldemar/crm_backend/internal/config/env"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/config"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/config/env"
 )
 
 type serviceProvider struct {

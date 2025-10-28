@@ -1,4 +1,4 @@
-module github.com/mrVoldemar/crm_backend
+module github.com/mrVoldemar/crm_backend/services/employee
 
 go 1.25.0
 

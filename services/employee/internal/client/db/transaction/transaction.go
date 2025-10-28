@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/mrVoldemar/crm_backend/internal/client/db"
-	"github.com/mrVoldemar/crm_backend/internal/client/db/pg"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db/pg"
 	"github.com/pkg/errors"
 )
 

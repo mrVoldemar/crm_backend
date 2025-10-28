@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/mrVoldemar/crm_backend/internal/app"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/app"
 )
 
 func main() {

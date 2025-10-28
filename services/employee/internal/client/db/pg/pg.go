@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/mrVoldemar/crm_backend/internal/client/db"
-	"github.com/mrVoldemar/crm_backend/internal/client/db/prettier"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/client/db/prettier"
 )
 
 type key string

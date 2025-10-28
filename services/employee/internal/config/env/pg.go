@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/mrVoldemar/crm_backend/internal/config"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/config"
 )
 
 var _ config.PGConfig = (*pgConfig)(nil)

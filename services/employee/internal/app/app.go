@@ -6,8 +6,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/mrVoldemar/crm_backend/internal/closer"
-	"github.com/mrVoldemar/crm_backend/internal/config"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/closer"
+	"github.com/mrVoldemar/crm_backend/services/employee/internal/config"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

@@ -41,7 +41,7 @@ local-migration-down:
 
 test:
 	go clean -testcache
-	go test ./... -covermode count -coverpkg=github.com/mrVoldemar/crm_backend/internal/service/...,github.com/mrVoldemar/crm_backend/internal/api/... -count 5
+	go test ./... -covermode count -coverpkg=github.com/mrVoldemar/crm_backend/services/employee/internal/service/...,github.com/mrVoldemar/crm_backend/services/employee/internal/api/... -count 5
 
 test-coverage:
 	go clean -testcache
