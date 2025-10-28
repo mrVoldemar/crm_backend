@@ -42,6 +42,7 @@ message Department {
   repeated string employee_ids = 7; // Employees in this department
   string created_at = 8;
   string updated_at = 9;
+  string deputy_manager_id = 10; // Deputy manager of this department
 }
 
 // Position represents a job position in the company
