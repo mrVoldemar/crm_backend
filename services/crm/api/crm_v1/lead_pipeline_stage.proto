@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Lead Pipeline Stage catalog (Kanban columns for leads)
+service LeadPipelineStageService {
+  rpc CreateLeadStage(CreateLeadStageRequest) returns (CreateLeadStageResponse) {
+    option (google.api.http) = {
+      post: "/v1/lead-stages"
+      body: "stage"
+    };
+  }
+  rpc GetLeadStage(GetLeadStageRequest) returns (GetLeadStageResponse) {
+    option (google.api.http) = {
+      get: "/v1/lead-stages/{id}"
+    };
+  }
+  rpc UpdateLeadStage(UpdateLeadStageRequest) returns (UpdateLeadStageResponse) {
+    option (google.api.http) = {
+      patch: "/v1/lead-stages/{stage.id}"
+      body: "stage"
+    };
+  }
+  rpc DeleteLeadStage(DeleteLeadStageRequest) returns (DeleteLeadStageResponse) {
+    option (google.api.http) = {
+      delete: "/v1/lead-stages/{id}"
+    };
+  }
+  rpc ListLeadStages(ListLeadStagesRequest) returns (ListLeadStagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/lead-stages"
+    };
+  }
+
+  // Reorder stages for leads pipeline
+  rpc ReorderLeadStages(ReorderLeadStagesRequest) returns (ReorderLeadStagesResponse) {
+    option (google.api.http) = {
+      post: "/v1/lead-stages:reorder"
+      body: "*"
+    };
+  }
+}
+
+message LeadPipelineStage {
+  string id = 1;
+  string name = 2;           // e.g., "Инициация", "Квалификация", ...
+  string description = 3;    // Optional
+  bool is_active = 4;
+  int32 sort_order = 5;      // UI order (Kanban column index)
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message CreateLeadStageRequest { LeadPipelineStage stage = 1; }
+message CreateLeadStageResponse { LeadPipelineStage stage = 1; }
+message GetLeadStageRequest { string id = 1; }
+message GetLeadStageResponse { LeadPipelineStage stage = 1; }
+message UpdateLeadStageRequest { LeadPipelineStage stage = 1; }
+message UpdateLeadStageResponse { LeadPipelineStage stage = 1; }
+message DeleteLeadStageRequest { string id = 1; }
+message DeleteLeadStageResponse { bool success = 1; }
+
+message ListLeadStagesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;        // search by name/description
+  bool only_active = 4;
+  string order_by = 5;     // e.g., "sort_order asc"
+}
+message ListLeadStagesResponse {
+  repeated LeadPipelineStage stages = 1;
+  string next_page_token = 2;
+}
+
+message ReorderLeadStagesRequest {
+  repeated string stage_ids = 1; // New sequence
+}
+message ReorderLeadStagesResponse {
+  repeated LeadPipelineStage stages = 1; // Updated sort_order
+}

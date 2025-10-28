@@ -39,6 +39,14 @@ service LeadService {
       get: "/v1/leads"
     };
   }
+
+  // Move lead to another pipeline stage (Kanban)
+  rpc MoveLeadStage(MoveLeadStageRequest) returns (MoveLeadStageResponse) {
+    option (google.api.http) = {
+      post: "/v1/leads/{id}:moveStage"
+      body: "*"
+    };
+  }
 }
 
 // Lead card
@@ -60,6 +68,9 @@ message Lead {
   double budget = 21;          // Budget amount (optional)
   string budget_currency = 22; // Currency code (e.g., "RUB", "USD")
   string source_id = 23;       // Lead Source ID (references Lead Source catalog)
+
+  // Pipeline stage
+  string stage_id = 24;        // Lead pipeline stage ID
 
   // Description
   string notes = 30;           // Free-form description of the request
@@ -121,6 +132,7 @@ message ListLeadsRequest {
   string manager_id = 12;
   double min_budget = 13;
   double max_budget = 14;
+  string stage_id = 15;
 
   // Sorting
   string order_by = 20; // e.g., "created_at desc, contact_name asc"
@@ -129,4 +141,13 @@ message ListLeadsRequest {
 message ListLeadsResponse {
   repeated Lead leads = 1;
   string next_page_token = 2;
+}
+
+// Move stage
+message MoveLeadStageRequest {
+  string id = 1;          // Lead ID
+  string to_stage_id = 2; // New stage ID
+}
+message MoveLeadStageResponse {
+  Lead lead = 1;
 }
