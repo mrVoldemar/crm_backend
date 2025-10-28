@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package deals;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Deal service for managing deals and Kanban stage transitions
+service DealService {
+  rpc CreateDeal(CreateDealRequest) returns (CreateDealResponse) {
+    option (google.api.http) = {
+      post: "/v1/deals"
+      body: "deal"
+    };
+  }
+
+  rpc GetDeal(GetDealRequest) returns (GetDealResponse) {
+    option (google.api.http) = {
+      get: "/v1/deals/{id}"
+    };
+  }
+
+  rpc UpdateDeal(UpdateDealRequest) returns (UpdateDealResponse) {
+    option (google.api.http) = {
+      patch: "/v1/deals/{deal.id}"
+      body: "deal"
+    };
+  }
+
+  rpc DeleteDeal(DeleteDealRequest) returns (DeleteDealResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deals/{id}"
+    };
+  }
+
+  // List with search and filtering (supports Kanban/grouping by stage on client side)
+  rpc ListDeals(ListDealsRequest) returns (ListDealsResponse) {
+    option (google.api.http) = {
+      get: "/v1/deals"
+    };
+  }
+
+  // Move deal to another stage (Kanban drag-and-drop)
+  rpc MoveDealStage(MoveDealStageRequest) returns (MoveDealStageResponse) {
+    option (google.api.http) = {
+      post: "/v1/deals/{id}:moveStage"
+      body: "*"
+    };
+  }
+}
+
+// Deal entity
+message Deal {
+  // System
+  string id = 1;
+  string created_at = 2;        // ISO8601
+  string updated_at = 3;        // ISO8601
+
+  // Main
+  string name = 10;             // Required: deal name
+  string manager_id = 11;       // Responsible manager
+  double budget = 12;           // Amount
+  string currency = 13;         // e.g., "RUB", "USD"
+  string expected_close_date = 14; // YYYY-MM-DD
+
+  // Relation to another entity (Contact/Company/Lead)
+  oneof related {
+    string contact_id = 20;
+    string company_id = 21;
+    string lead_id = 22;
+  }
+
+  // Pipeline stage
+  string stage_id = 30; // References DealStage (pipeline stage)
+
+  // Line items
+  repeated DealItem items = 40;
+
+  // Calculated totals (server-side)
+  double items_subtotal = 50; // sum(quantity * price)
+}
+
+// Deal line item
+message DealItem {
+  string product_id = 1; // Product from catalog
+  string name = 2;       // Optional snapshot of product name
+  double quantity = 3;   // Quantity
+  double price = 4;      // Price per unit (editable)
+  double total = 5;      // Calculated quantity * price (server may ignore input)
+}
+
+// Requests / Responses
+message CreateDealRequest { Deal deal = 1; }
+message CreateDealResponse { Deal deal = 1; }
+message GetDealRequest { string id = 1; }
+message GetDealResponse { Deal deal = 1; }
+message UpdateDealRequest { Deal deal = 1; }
+message UpdateDealResponse { Deal deal = 1; }
+message DeleteDealRequest { string id = 1; }
+message DeleteDealResponse { bool success = 1; }
+
+message ListDealsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // Full-text search across name, related entity names, etc.
+  string query = 3; // e.g., "acme +contact:ivan +stage:qualification"
+
+  // Filters
+  string manager_id = 10;
+  string stage_id = 11;
+  string contact_id = 12;
+  string company_id = 13;
+  string lead_id = 14;
+  string currency = 15;
+  string expected_close_date_from = 16; // YYYY-MM-DD
+  string expected_close_date_to = 17;   // YYYY-MM-DD
+  double min_budget = 18;
+  double max_budget = 19;
+
+  // Sorting
+  string order_by = 20; // e.g., "stage_id asc, updated_at desc"
+}
+
+message ListDealsResponse {
+  repeated Deal deals = 1;
+  string next_page_token = 2;
+}
+
+// Move stage
+message MoveDealStageRequest {
+  string id = 1;        // Deal ID
+  string to_stage_id = 2; // New stage ID
+}
+message MoveDealStageResponse {
+  Deal deal = 1;
+}

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package deals;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Product catalog used in deal line items
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/products"
+      body: "product"
+    };
+  }
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/products/{id}"
+    };
+  }
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {
+    option (google.api.http) = {
+      patch: "/v1/products/{product.id}"
+      body: "product"
+    };
+  }
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/v1/products/{id}"
+    };
+  }
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/products"
+    };
+  }
+}
+
+message Product {
+  string id = 1;
+  string name = 2;           // Product name
+  string sku = 3;            // Article/SKU
+  double price = 4;          // Default price
+  string currency = 5;       // e.g., "RUB", "USD"
+  string description = 6;    // Optional
+  bool is_active = 7;
+  int32 sort_order = 8;      // For UI catalogs
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message CreateProductRequest { Product product = 1; }
+message CreateProductResponse { Product product = 1; }
+message GetProductRequest { string id = 1; }
+message GetProductResponse { Product product = 1; }
+message UpdateProductRequest { Product product = 1; }
+message UpdateProductResponse { Product product = 1; }
+message DeleteProductRequest { string id = 1; }
+message DeleteProductResponse { bool success = 1; }
+
+message ListProductsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;        // search by name, sku, description
+  bool only_active = 4;
+  string order_by = 5;     // e.g., "name asc"
+}
+message ListProductsResponse {
+  repeated Product products = 1;
+  string next_page_token = 2;
+}

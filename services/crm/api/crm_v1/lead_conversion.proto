@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Lead conversion service handles converting a lead into Contact/Company and optional Deal
+service LeadConversionService {
+  // Convert a lead according to selected action and provided data
+  rpc ConvertLead(ConvertLeadRequest) returns (ConvertLeadResponse) {
+    option (google.api.http) = {
+      post: "/v1/leads/{lead_id}:convert"
+      body: "*"
+    };
+  }
+}
+
+// Conversion action
+enum LeadConversionAction {
+  LEAD_CONVERSION_ACTION_UNSPECIFIED = 0;
+  LEAD_CONVERSION_CREATE_CONTACT = 1;   // Create new Contact
+  LEAD_CONVERSION_CREATE_COMPANY = 2;   // Create new Company
+  LEAD_CONVERSION_LINK_CONTACT = 3;     // Link to existing Contact
+  LEAD_CONVERSION_LINK_COMPANY = 4;     // Link to existing Company
+}
+
+// Request to convert a lead
+message ConvertLeadRequest {
+  string lead_id = 1;                    // Lead to convert (must be in NEW or IN_PROGRESS)
+  LeadConversionAction action = 2;       // Selected action
+
+  // If creating a new Contact
+  NewContactData new_contact = 10;
+  // If creating a new Company
+  NewCompanyData new_company = 11;
+
+  // If linking to existing entities
+  string contact_id = 12;                // Existing Contact ID (for LINK_CONTACT)
+  string company_id = 13;                // Existing Company ID (for LINK_COMPANY)
+
+  // Optional deal creation on top of conversion
+  OptionalDealData deal = 20;            // If present and deal.create = true, create a Deal
+
+  // Optional manager reassignment
+  string manager_id = 30;                // Will be set on created entities if provided
+}
+
+// Basic new contact payload (pre-filled from lead, editable by user)
+message NewContactData {
+  string first_name = 1;                 // Required by contract
+  string last_name = 2;                  // Required by contract (can be empty in UI if unknown)
+  string phone = 3;
+  string email = 4;
+  string position = 5;
+  string company_id = 6;                 // Optionally bind to a company (if also creating company, leave empty)
+  string contact_category_id = 7;        // Optional category from catalog
+}
+
+// Basic new company payload (pre-filled from lead, editable by user)
+message NewCompanyData {
+  string name = 1;                       // Required by contract
+  string phone = 2;
+  string email = 3;
+  string website = 4;
+  string industry_id = 5;
+  string company_size_id = 6;
+}
+
+// Optional deal creation settings
+message OptionalDealData {
+  bool create = 1;                       // If true, create a deal
+  string name = 2;                       // Deal name (pre-filled from lead)
+  double budget = 3;                     // From lead
+  string currency = 4;                   // e.g., "RUB"
+  string expected_close_date = 5;        // YYYY-MM-DD
+  string stage_id = 6;                   // Initial stage of deal pipeline
+
+  // Attach deal to an entity (oneof)
+  oneof related {
+    string contact_id = 20;              // Use if created/linked contact is the primary relation
+    string company_id = 21;              // Use if created/linked company is the primary relation
+    string lead_id = 22;                 // Fallback to lead if neither provided
+  }
+}
+
+// Response with results of conversion
+message ConvertLeadResponse {
+  // IDs of created or linked entities
+  string contact_id = 1;                 // Present if action involved contact
+  string company_id = 2;                 // Present if action involved company
+  string deal_id = 3;                    // Present if deal.create was true
+
+  // Updated lead after conversion (e.g., status may change to QUALIFIED)
+  Lead lead = 10;
+}

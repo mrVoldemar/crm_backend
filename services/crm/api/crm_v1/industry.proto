@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Industry catalog
+service IndustryService {
+  rpc CreateIndustry(CreateIndustryRequest) returns (CreateIndustryResponse) {
+    option (google.api.http) = {
+      post: "/v1/catalog/industries"
+      body: "industry"
+    };
+  }
+  rpc GetIndustry(GetIndustryRequest) returns (GetIndustryResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/industries/{id}"
+    };
+  }
+  rpc UpdateIndustry(UpdateIndustryRequest) returns (UpdateIndustryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/catalog/industries/{industry.id}"
+      body: "industry"
+    };
+  }
+  rpc DeleteIndustry(DeleteIndustryRequest) returns (DeleteIndustryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/catalog/industries/{id}"
+    };
+  }
+  rpc ListIndustries(ListIndustriesRequest) returns (ListIndustriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/industries"
+    };
+  }
+}
+
+message Industry {
+  string id = 1;
+  string name = 2;           // Industry name
+  string description = 3;    // Optional
+  bool is_active = 4;        // For soft disable
+  int32 sort_order = 5;      // For UI ordering
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message CreateIndustryRequest { Industry industry = 1; }
+message CreateIndustryResponse { Industry industry = 1; }
+message GetIndustryRequest { string id = 1; }
+message GetIndustryResponse { Industry industry = 1; }
+message UpdateIndustryRequest { Industry industry = 1; }
+message UpdateIndustryResponse { Industry industry = 1; }
+message DeleteIndustryRequest { string id = 1; }
+message DeleteIndustryResponse { bool success = 1; }
+
+message ListIndustriesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;        // search by name/description
+  bool only_active = 4;    // filter active
+  string order_by = 5;
+}
+message ListIndustriesResponse {
+  repeated Industry industries = 1;
+  string next_page_token = 2;
+}

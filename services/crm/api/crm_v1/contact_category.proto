@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Contact Category catalog
+service ContactCategoryService {
+  rpc CreateContactCategory(CreateContactCategoryRequest) returns (CreateContactCategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/catalog/contact-categories"
+      body: "category"
+    };
+  }
+  rpc GetContactCategory(GetContactCategoryRequest) returns (GetContactCategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/contact-categories/{id}"
+    };
+  }
+  rpc UpdateContactCategory(UpdateContactCategoryRequest) returns (UpdateContactCategoryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/catalog/contact-categories/{category.id}"
+      body: "category"
+    };
+  }
+  rpc DeleteContactCategory(DeleteContactCategoryRequest) returns (DeleteContactCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/catalog/contact-categories/{id}"
+    };
+  }
+  rpc ListContactCategories(ListContactCategoriesRequest) returns (ListContactCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/contact-categories"
+    };
+  }
+}
+
+message ContactCategory {
+  string id = 1;
+  string name = 2;           // e.g., "Партнер", "Постоянный клиент"
+  string description = 3;    // Optional
+  bool is_active = 4;
+  int32 sort_order = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message CreateContactCategoryRequest { ContactCategory category = 1; }
+message CreateContactCategoryResponse { ContactCategory category = 1; }
+message GetContactCategoryRequest { string id = 1; }
+message GetContactCategoryResponse { ContactCategory category = 1; }
+message UpdateContactCategoryRequest { ContactCategory category = 1; }
+message UpdateContactCategoryResponse { ContactCategory category = 1; }
+message DeleteContactCategoryRequest { string id = 1; }
+message DeleteContactCategoryResponse { bool success = 1; }
+
+message ListContactCategoriesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;
+  bool only_active = 4;
+  string order_by = 5;
+}
+message ListContactCategoriesResponse {
+  repeated ContactCategory categories = 1;
+  string next_page_token = 2;
+}
