@@ -1,0 +1,12 @@
+{
+  "services": [
+    {
+      "name": "employee",
+      "url": "http://employee-service:8080"
+    },
+    {
+      "name": "client",
+      "url": "http://client-service:8080"
+    }
+  ]
+}

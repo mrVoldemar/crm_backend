@@ -1,0 +1,17 @@
+toc:
+  id: api-gw
+  name: API Gateway Service Documentation
+  description: Подробная документация по сервису API Gateway для CRM-системы
+  items:
+    - title: Введение
+      href: topics/introduction.md
+    - title: Конфигурация
+      href: topics/configuration.md
+    - title: Middleware
+      href: topics/middleware.md
+    - title: Service Proxy
+      href: topics/proxy.md
+    - title: API Endpoints
+      href: topics/endpoints.md
+    - title: Развертывание
+      href: topics/deployment.md
