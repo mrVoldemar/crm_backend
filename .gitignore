@@ -2,3 +2,4 @@
 /bin/
 /vendor/
 /coverage.out
+/vendor.protogen
