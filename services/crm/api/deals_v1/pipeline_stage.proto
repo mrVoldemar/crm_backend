@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package deals;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Pipeline Stage catalog for Deals (Kanban columns)
+service PipelineStageService {
+  rpc CreateStage(CreateStageRequest) returns (CreateStageResponse) {
+    option (google.api.http) = {
+      post: "/v1/deal-stages"
+      body: "stage"
+    };
+  }
+  rpc GetStage(GetStageRequest) returns (GetStageResponse) {
+    option (google.api.http) = {
+      get: "/v1/deal-stages/{id}"
+    };
+  }
+  rpc UpdateStage(UpdateStageRequest) returns (UpdateStageResponse) {
+    option (google.api.http) = {
+      patch: "/v1/deal-stages/{stage.id}"
+      body: "stage"
+    };
+  }
+  rpc DeleteStage(DeleteStageRequest) returns (DeleteStageResponse) {
+    option (google.api.http) = {
+      delete: "/v1/deal-stages/{id}"
+    };
+  }
+  rpc ListStages(ListStagesRequest) returns (ListStagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/deal-stages"
+    };
+  }
+
+  // Reorder stages (drag-and-drop ordering)
+  rpc ReorderStages(ReorderStagesRequest) returns (ReorderStagesResponse) {
+    option (google.api.http) = {
+      post: "/v1/deal-stages:reorder"
+      body: "*"
+    };
+  }
+}
+
+message PipelineStage {
+  string id = 1;
+  string name = 2;           // e.g., "Инициация", "Квалификация", ...
+  string description = 3;    // Optional
+  bool is_final_win = 4;     // Marks stage as "Успешно закрыта"
+  bool is_final_lost = 5;    // Marks stage as "Закрыта и не реализована"
+  bool is_active = 6;
+  int32 sort_order = 7;      // UI order (Kanban column index)
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message CreateStageRequest { PipelineStage stage = 1; }
+message CreateStageResponse { PipelineStage stage = 1; }
+message GetStageRequest { string id = 1; }
+message GetStageResponse { PipelineStage stage = 1; }
+message UpdateStageRequest { PipelineStage stage = 1; }
+message UpdateStageResponse { PipelineStage stage = 1; }
+message DeleteStageRequest { string id = 1; }
+message DeleteStageResponse { bool success = 1; }
+
+message ListStagesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;        // search by name/description
+  bool only_active = 4;
+  string order_by = 5;     // e.g., "sort_order asc"
+}
+message ListStagesResponse {
+  repeated PipelineStage stages = 1;
+  string next_page_token = 2;
+}
+
+message ReorderStagesRequest {
+  // Provide entire desired order: list of stage IDs in their new sequence
+  repeated string stage_ids = 1;
+}
+message ReorderStagesResponse {
+  repeated PipelineStage stages = 1; // Updated with new sort_order
+}
