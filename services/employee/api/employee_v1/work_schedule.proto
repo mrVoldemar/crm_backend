@@ -1,0 +1,266 @@
+syntax = "proto3";
+
+package employee;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+service WorkScheduleService {
+  // Work schedule management
+  rpc CreateWorkSchedule(CreateWorkScheduleRequest) returns (CreateWorkScheduleResponse) {
+    option (google.api.http) = {
+      post: "/v1/work-schedules"
+      body: "schedule"
+    };
+  }
+
+  rpc GetWorkSchedule(GetWorkScheduleRequest) returns (GetWorkScheduleResponse) {
+    option (google.api.http) = {
+      get: "/v1/work-schedules/{id}"
+    };
+  }
+
+  rpc UpdateWorkSchedule(UpdateWorkScheduleRequest) returns (UpdateWorkScheduleResponse) {
+    option (google.api.http) = {
+      put: "/v1/work-schedules/{schedule.id}"
+      body: "schedule"
+    };
+  }
+
+  rpc DeleteWorkSchedule(DeleteWorkScheduleRequest) returns (DeleteWorkScheduleResponse) {
+    option (google.api.http) = {
+      delete: "/v1/work-schedules/{id}"
+    };
+  }
+
+  rpc ListWorkSchedules(ListWorkSchedulesRequest) returns (ListWorkSchedulesResponse) {
+    option (google.api.http) = {
+      get: "/v1/work-schedules"
+    };
+  }
+
+  // Work time tracking
+  rpc CreateWorkTimeRecord(CreateWorkTimeRecordRequest) returns (CreateWorkTimeRecordResponse) {
+    option (google.api.http) = {
+      post: "/v1/work-time-records"
+      body: "record"
+    };
+  }
+
+  rpc GetWorkTimeRecord(GetWorkTimeRecordRequest) returns (GetWorkTimeRecordResponse) {
+    option (google.api.http) = {
+      get: "/v1/work-time-records/{id}"
+    };
+  }
+
+  rpc UpdateWorkTimeRecord(UpdateWorkTimeRecordRequest) returns (UpdateWorkTimeRecordResponse) {
+    option (google.api.http) = {
+      put: "/v1/work-time-records/{record.id}"
+      body: "record"
+    };
+  }
+
+  rpc DeleteWorkTimeRecord(DeleteWorkTimeRecordRequest) returns (DeleteWorkTimeRecordResponse) {
+    option (google.api.http) = {
+      delete: "/v1/work-time-records/{id}"
+    };
+  }
+
+  rpc ListWorkTimeRecords(ListWorkTimeRecordsRequest) returns (ListWorkTimeRecordsResponse) {
+    option (google.api.http) = {
+      get: "/v1/work-time-records"
+    };
+  }
+}
+
+// Work schedule defines standard working hours for an employee or group of employees
+message WorkSchedule {
+  string id = 1;
+  string name = 2; // Schedule name (e.g., "Standard Week Schedule", "Night Shift")
+  string description = 3; // Description of the schedule
+  repeated WorkPeriod periods = 4; // Work periods (can be days of week or specific dates)
+  string employee_id = 5; // If assigned to specific employee
+  string department_id = 6; // If assigned to department
+  string position_id = 7; // If assigned to position
+  string timezone = 8; // Timezone for this schedule
+  string created_at = 9;
+  string updated_at = 10;
+  bool is_active = 11; // Is this schedule currently active
+}
+
+// Work period defines working hours for a specific day or date range
+message WorkPeriod {
+  string id = 1;
+  DayOfWeek day_of_week = 2; // For recurring weekly schedules
+  string specific_date = 3; // For specific dates (YYYY-MM-DD)
+  string start_time = 4; // Start time (HH:MM format)
+  string end_time = 5; // End time (HH:MM format)
+  repeated BreakPeriod breaks = 6; // Break periods during work time
+  bool is_working_day = 7; // False for days off
+}
+
+// Break period defines non-working time within a work period
+message BreakPeriod {
+  string id = 1;
+  string start_time = 2; // Break start time (HH:MM format)
+  string end_time = 3; // Break end time (HH:MM format)
+  string name = 4; // Name of break (e.g., "Lunch Break")
+  BreakType type = 5; // Type of break
+}
+
+// Work time record tracks actual time worked by an employee
+message WorkTimeRecord {
+  string id = 1;
+  string employee_id = 2; // Employee who worked
+  string schedule_id = 3; // Associated work schedule
+  string date = 4; // Date of work (YYYY-MM-DD)
+  string clock_in_time = 5; // Actual clock-in time (ISO 8601)
+  string clock_out_time = 6; // Actual clock-out time (ISO 8601)
+  int32 scheduled_minutes = 7; // Scheduled work minutes for this day
+  int32 actual_minutes = 8; // Actual worked minutes
+  int32 break_minutes = 9; // Total break minutes
+  WorkTimeRecordStatus status = 10; // Status of this record
+  repeated WorkTimeAdjustment adjustments = 11; // Manual adjustments
+  string notes = 12; // Additional notes
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+// Adjustment to work time records (manual corrections)
+message WorkTimeAdjustment {
+  string id = 1;
+  string adjusted_by = 2; // User who made adjustment
+  string reason = 3; // Reason for adjustment
+  string adjusted_at = 4; // When adjustment was made
+  int32 minutes_adjusted = 5; // Minutes added/removed
+  WorkTimeAdjustmentType adjustment_type = 6; // Type of adjustment
+}
+
+// Enumerations
+enum DayOfWeek {
+  DAY_OF_WEEK_UNSPECIFIED = 0;
+  DAY_OF_WEEK_MONDAY = 1;
+  DAY_OF_WEEK_TUESDAY = 2;
+  DAY_OF_WEEK_WEDNESDAY = 3;
+  DAY_OF_WEEK_THURSDAY = 4;
+  DAY_OF_WEEK_FRIDAY = 5;
+  DAY_OF_WEEK_SATURDAY = 6;
+  DAY_OF_WEEK_SUNDAY = 7;
+}
+
+enum BreakType {
+  BREAK_TYPE_UNSPECIFIED = 0;
+  BREAK_TYPE_LUNCH = 1;
+  BREAK_TYPE_COFFEE = 2;
+  BREAK_TYPE_MEETING = 3;
+  BREAK_TYPE_OTHER = 4;
+}
+
+enum WorkTimeRecordStatus {
+  WORK_TIME_RECORD_STATUS_UNSPECIFIED = 0;
+  WORK_TIME_RECORD_STATUS_PENDING = 1;
+  WORK_TIME_RECORD_STATUS_APPROVED = 2;
+  WORK_TIME_RECORD_STATUS_REJECTED = 3;
+  WORK_TIME_RECORD_STATUS_CORRECTED = 4;
+}
+
+enum WorkTimeAdjustmentType {
+  WORK_TIME_ADJUSTMENT_TYPE_UNSPECIFIED = 0;
+  WORK_TIME_ADJUSTMENT_TYPE_ADDITION = 1; // Adding time
+  WORK_TIME_ADJUSTMENT_TYPE_DEDUCTION = 2; // Removing time
+  WORK_TIME_ADJUSTMENT_TYPE_CORRECTION = 3; // Correcting time
+}
+
+// Request/Response messages for Work Schedules
+message CreateWorkScheduleRequest {
+  WorkSchedule schedule = 1;
+}
+
+message CreateWorkScheduleResponse {
+  WorkSchedule schedule = 1;
+}
+
+message GetWorkScheduleRequest {
+  string id = 1;
+}
+
+message GetWorkScheduleResponse {
+  WorkSchedule schedule = 1;
+}
+
+message UpdateWorkScheduleRequest {
+  WorkSchedule schedule = 1;
+}
+
+message UpdateWorkScheduleResponse {
+  WorkSchedule schedule = 1;
+}
+
+message DeleteWorkScheduleRequest {
+  string id = 1;
+}
+
+message DeleteWorkScheduleResponse {
+  bool success = 1;
+}
+
+message ListWorkSchedulesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string employee_id = 5;
+  string department_id = 6;
+}
+
+message ListWorkSchedulesResponse {
+  repeated WorkSchedule schedules = 1;
+  string next_page_token = 2;
+}
+
+// Request/Response messages for Work Time Records
+message CreateWorkTimeRecordRequest {
+  WorkTimeRecord record = 1;
+}
+
+message CreateWorkTimeRecordResponse {
+  WorkTimeRecord record = 1;
+}
+
+message GetWorkTimeRecordRequest {
+  string id = 1;
+}
+
+message GetWorkTimeRecordResponse {
+  WorkTimeRecord record = 1;
+}
+
+message UpdateWorkTimeRecordRequest {
+  WorkTimeRecord record = 1;
+}
+
+message UpdateWorkTimeRecordResponse {
+  WorkTimeRecord record = 1;
+}
+
+message DeleteWorkTimeRecordRequest {
+  string id = 1;
+}
+
+message DeleteWorkTimeRecordResponse {
+  bool success = 1;
+}
+
+message ListWorkTimeRecordsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string employee_id = 5;
+  string date_from = 6;
+  string date_to = 7;
+}
+
+message ListWorkTimeRecordsResponse {
+  repeated WorkTimeRecord records = 1;
+  string next_page_token = 2;
+}

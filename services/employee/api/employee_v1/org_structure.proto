@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package employee;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+service DepartmentService {
+
+  rpc ListDepartments(ListDepartmentsRequest) returns (ListDepartmentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/departments"
+    };
+  }
+
+  rpc GetDepartmentTree(GetDepartmentTreeRequest) returns (GetDepartmentTreeResponse) {
+    option (google.api.http) = {
+      get: "/v1/departments/tree"
+    };
+  }
+
+  rpc CreatePosition(CreatePositionRequest) returns (CreatePositionResponse) {
+    option (google.api.http) = {
+      post: "/v1/positions"
+      body: "position"
+    };
+  }
+
+  rpc ListPositions(ListPositionsRequest) returns (ListPositionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/positions"
+    };
+  }
+}
+// Department with hierarchy support
+message Department {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string parent_department_id = 4; // For hierarchy support
+  repeated Department sub_departments = 5;
+  string manager_id = 6; // Manager of this department
+  repeated string employee_ids = 7; // Employees in this department
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+// Position represents a job position in the company
+message Position {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string department_id = 4;
+  int32 grade = 5; // Grade or level of the position
+  repeated string responsibilities = 6; // Key responsibilities
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+// Department request/response messages
+message ListDepartmentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+}
+
+message ListDepartmentsResponse {
+  repeated Department departments = 1;
+  string next_page_token = 2;
+}
+
+message GetDepartmentTreeRequest {
+  string root_department_id = 1; // If empty, gets the entire tree
+}
+
+message GetDepartmentTreeResponse {
+  repeated Department departments = 1; // Top level departments
+}
+
+// Position request/response messages
+message CreatePositionRequest {
+  Position position = 1;
+}
+
+message CreatePositionResponse {
+  Position position = 1;
+}
+
+message ListPositionsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string department_id = 5; // Filter by department
+}
+
+message ListPositionsResponse {
+  repeated Position positions = 1;
+  string next_page_token = 2;
+}
+

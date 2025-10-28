@@ -1,0 +1,401 @@
+syntax = "proto3";
+
+package employee;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+service KPIPerformanceService {
+  // KPI management
+  rpc CreateKPI(CreateKPIRequest) returns (CreateKPIResponse) {
+    option (google.api.http) = {
+      post: "/v1/kpis"
+      body: "kpi"
+    };
+  }
+
+  rpc GetKPI(GetKPIRequest) returns (GetKPIResponse) {
+    option (google.api.http) = {
+      get: "/v1/kpis/{id}"
+    };
+  }
+
+  rpc UpdateKPI(UpdateKPIRequest) returns (UpdateKPIResponse) {
+    option (google.api.http) = {
+      put: "/v1/kpis/{kpi.id}"
+      body: "kpi"
+    };
+  }
+
+  rpc DeleteKPI(DeleteKPIRequest) returns (DeleteKPIResponse) {
+    option (google.api.http) = {
+      delete: "/v1/kpis/{id}"
+    };
+  }
+
+  rpc ListKPIs(ListKPIsRequest) returns (ListKPIsResponse) {
+    option (google.api.http) = {
+      get: "/v1/kpis"
+    };
+  }
+
+  // Performance evaluation
+  rpc CreatePerformanceEvaluation(CreatePerformanceEvaluationRequest) returns (CreatePerformanceEvaluationResponse) {
+    option (google.api.http) = {
+      post: "/v1/performance-evaluations"
+      body: "evaluation"
+    };
+  }
+
+  rpc GetPerformanceEvaluation(GetPerformanceEvaluationRequest) returns (GetPerformanceEvaluationResponse) {
+    option (google.api.http) = {
+      get: "/v1/performance-evaluations/{id}"
+    };
+  }
+
+  rpc UpdatePerformanceEvaluation(UpdatePerformanceEvaluationRequest) returns (UpdatePerformanceEvaluationResponse) {
+    option (google.api.http) = {
+      put: "/v1/performance-evaluations/{evaluation.id}"
+      body: "evaluation"
+    };
+  }
+
+  rpc DeletePerformanceEvaluation(DeletePerformanceEvaluationRequest) returns (DeletePerformanceEvaluationResponse) {
+    option (google.api.http) = {
+      delete: "/v1/performance-evaluations/{id}"
+    };
+  }
+
+  rpc ListPerformanceEvaluations(ListPerformanceEvaluationsRequest) returns (ListPerformanceEvaluationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/performance-evaluations"
+    };
+  }
+
+  // Performance targets
+  rpc CreatePerformanceTarget(CreatePerformanceTargetRequest) returns (CreatePerformanceTargetResponse) {
+    option (google.api.http) = {
+      post: "/v1/performance-targets"
+      body: "target"
+    };
+  }
+
+  rpc GetPerformanceTarget(GetPerformanceTargetRequest) returns (GetPerformanceTargetResponse) {
+    option (google.api.http) = {
+      get: "/v1/performance-targets/{id}"
+    };
+  }
+
+  rpc UpdatePerformanceTarget(UpdatePerformanceTargetRequest) returns (UpdatePerformanceTargetResponse) {
+    option (google.api.http) = {
+      put: "/v1/performance-targets/{target.id}"
+      body: "target"
+    };
+  }
+
+  rpc DeletePerformanceTarget(DeletePerformanceTargetRequest) returns (DeletePerformanceTargetResponse) {
+    option (google.api.http) = {
+      delete: "/v1/performance-targets/{id}"
+    };
+  }
+
+  rpc ListPerformanceTargets(ListPerformanceTargetsRequest) returns (ListPerformanceTargetsResponse) {
+    option (google.api.http) = {
+      get: "/v1/performance-targets"
+    };
+  }
+}
+
+// KPI (Key Performance Indicator) definition
+message KPI {
+  string id = 1;
+  string name = 2; // Name of the KPI
+  string description = 3; // Detailed description
+  KPICategory category = 4; // Category of the KPI
+  string department_id = 5; // Department this KPI belongs to
+  string position_id = 6; // Position this KPI applies to
+  string employee_id = 7; // Specific employee this KPI applies to (if individual)
+  KPIType type = 8; // Type of measurement
+  string target_value = 9; // Target value for this KPI
+  string unit = 10; // Unit of measurement
+  KPICalculationMethod calculation_method = 11; // How this KPI is calculated
+  KPIFrequency frequency = 12; // How often this KPI is measured
+  double weight = 13; // Weight in overall performance score (0.0 - 1.0)
+  bool is_active = 14; // Is this KPI currently active
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+// Performance evaluation for an employee over a period
+message PerformanceEvaluation {
+  string id = 1;
+  string employee_id = 2; // Employee being evaluated
+  string evaluator_id = 3; // Person conducting the evaluation
+  string period_start = 4; // Evaluation period start date (YYYY-MM-DD)
+  string period_end = 5; // Evaluation period end date (YYYY-MM-DD)
+  KPIEvaluationPeriod period_type = 6; // Type of evaluation period
+  repeated KPIResult kpi_results = 7; // Results for each KPI
+  double overall_score = 8; // Overall performance score
+  PerformanceRating rating = 9; // Overall performance rating
+  string comments = 10; // Comments from evaluator
+  PerformanceEvaluationStatus status = 11; // Status of evaluation
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+// Performance target for an employee/department for a period
+message PerformanceTarget {
+  string id = 1;
+  string employee_id = 2; // Employee this target is for (optional)
+  string department_id = 3; // Department this target is for (optional)
+  string period_start = 4; // Target period start date (YYYY-MM-DD)
+  string period_end = 5; // Target period end date (YYYY-MM-DD)
+  KPIEvaluationPeriod period_type = 6; // Type of target period
+  repeated KPITarget kpi_targets = 7; // Targets for each KPI
+  string comments = 8; // Additional comments
+  PerformanceTargetStatus status = 9; // Status of target
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+// Result of a specific KPI evaluation
+message KPIResult {
+  string id = 1;
+  string kpi_id = 2; // Reference to the KPI
+  string kpi_name = 3; // Name of the KPI (for display)
+  string actual_value = 4; // Actual achieved value
+  string target_value = 5; // Target value for this period
+  string unit = 6; // Unit of measurement
+  double score = 7; // Score for this KPI (0.0 - 1.0)
+  string comments = 8; // Comments on performance
+  string evaluated_at = 9; // When this KPI was evaluated
+}
+
+// Target for a specific KPI
+message KPITarget {
+  string id = 1;
+  string kpi_id = 2; // Reference to the KPI
+  string kpi_name = 3; // Name of the KPI (for display)
+  string target_value = 4; // Target value for this period
+  string unit = 5; // Unit of measurement
+  double weight = 6; // Weight in overall target score (0.0 - 1.0)
+}
+
+// Enumerations
+enum KPICategory {
+  KPI_CATEGORY_UNSPECIFIED = 0;
+  KPI_CATEGORY_SALES = 1; // Sales related KPIs
+  KPI_CATEGORY_CUSTOMER_SERVICE = 2; // Customer service related KPIs
+  KPI_CATEGORY_PRODUCTIVITY = 3; // Productivity related KPIs
+  KPI_CATEGORY_QUALITY = 4; // Quality related KPIs
+  KPI_CATEGORY_FINANCIAL = 5; // Financial related KPIs
+  KPI_CATEGORY_OPERATIONAL = 6; // Operational related KPIs
+  KPI_CATEGORY_HR = 7; // Human resources related KPIs
+}
+
+enum KPIType {
+  KPI_TYPE_UNSPECIFIED = 0;
+  KPI_TYPE_NUMERIC = 1; // Numeric values (e.g., sales amount)
+  KPI_TYPE_PERCENTAGE = 2; // Percentage values (e.g., customer satisfaction)
+  KPI_TYPE_BOOLEAN = 3; // Boolean values (e.g., task completion)
+  KPI_TYPE_CATEGORICAL = 4; // Categorical values (e.g., performance levels)
+}
+
+enum KPICalculationMethod {
+  KPI_CALCULATION_METHOD_UNSPECIFIED = 0;
+  KPI_CALCULATION_METHOD_SUM = 1; // Sum of values
+  KPI_CALCULATION_METHOD_AVERAGE = 2; // Average of values
+  KPI_CALCULATION_METHOD_MAX = 3; // Maximum value
+  KPI_CALCULATION_METHOD_MIN = 4; // Minimum value
+  KPI_CALCULATION_METHOD_LAST = 5; // Last recorded value
+}
+
+enum KPIFrequency {
+  KPI_FREQUENCY_UNSPECIFIED = 0;
+  KPI_FREQUENCY_DAILY = 1; // Measured daily
+  KPI_FREQUENCY_WEEKLY = 2; // Measured weekly
+  KPI_FREQUENCY_MONTHLY = 3; // Measured monthly
+  KPI_FREQUENCY_QUARTERLY = 4; // Measured quarterly
+  KPI_FREQUENCY_ANNUALLY = 5; // Measured annually
+}
+
+enum KPIEvaluationPeriod {
+  KPI_EVALUATION_PERIOD_UNSPECIFIED = 0;
+  KPI_EVALUATION_PERIOD_MONTHLY = 1; // Monthly evaluation
+  KPI_EVALUATION_PERIOD_QUARTERLY = 2; // Quarterly evaluation
+  KPI_EVALUATION_PERIOD_HALF_YEARLY = 3; // Half-yearly evaluation
+  KPI_EVALUATION_PERIOD_ANNUALLY = 4; // Annual evaluation
+  KPI_EVALUATION_PERIOD_PROJECT_BASED = 5; // Project-based evaluation
+}
+
+enum PerformanceRating {
+  PERFORMANCE_RATING_UNSPECIFIED = 0;
+  PERFORMANCE_RATING_OUTSTANDING = 1; // Outstanding performance
+  PERFORMANCE_RATING_EXCEEDS_EXPECTATIONS = 2; // Exceeds expectations
+  PERFORMANCE_RATING_MEETS_EXPECTATIONS = 3; // Meets expectations
+  PERFORMANCE_RATING_NEEDS_IMPROVEMENT = 4; // Needs improvement
+  PERFORMANCE_RATING_UNACCEPTABLE = 5; // Unacceptable performance
+}
+
+enum PerformanceEvaluationStatus {
+  PERFORMANCE_EVALUATION_STATUS_UNSPECIFIED = 0;
+  PERFORMANCE_EVALUATION_STATUS_DRAFT = 1; // Draft evaluation
+  PERFORMANCE_EVALUATION_STATUS_SUBMITTED = 2; // Submitted for review
+  PERFORMANCE_EVALUATION_STATUS_APPROVED = 3; // Approved
+  PERFORMANCE_EVALUATION_STATUS_REJECTED = 4; // Rejected
+}
+
+enum PerformanceTargetStatus {
+  PERFORMANCE_TARGET_STATUS_UNSPECIFIED = 0;
+  PERFORMANCE_TARGET_STATUS_ACTIVE = 1; // Active target
+  PERFORMANCE_TARGET_STATUS_COMPLETED = 2; // Completed target
+  PERFORMANCE_TARGET_STATUS_CANCELLED = 3; // Cancelled target
+}
+
+// Request/Response messages for KPIs
+message CreateKPIRequest {
+  KPI kpi = 1;
+}
+
+message CreateKPIResponse {
+  KPI kpi = 1;
+}
+
+message GetKPIRequest {
+  string id = 1;
+}
+
+message GetKPIResponse {
+  KPI kpi = 1;
+}
+
+message UpdateKPIRequest {
+  KPI kpi = 1;
+}
+
+message UpdateKPIResponse {
+  KPI kpi = 1;
+}
+
+message DeleteKPIRequest {
+  string id = 1;
+}
+
+message DeleteKPIResponse {
+  bool success = 1;
+}
+
+message ListKPIsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string department_id = 5;
+  string position_id = 6;
+  string employee_id = 7;
+  KPICategory category = 8;
+}
+
+message ListKPIsResponse {
+  repeated KPI kpis = 1;
+  string next_page_token = 2;
+}
+
+// Request/Response messages for Performance Evaluations
+message CreatePerformanceEvaluationRequest {
+  PerformanceEvaluation evaluation = 1;
+}
+
+message CreatePerformanceEvaluationResponse {
+  PerformanceEvaluation evaluation = 1;
+}
+
+message GetPerformanceEvaluationRequest {
+  string id = 1;
+}
+
+message GetPerformanceEvaluationResponse {
+  PerformanceEvaluation evaluation = 1;
+}
+
+message UpdatePerformanceEvaluationRequest {
+  PerformanceEvaluation evaluation = 1;
+}
+
+message UpdatePerformanceEvaluationResponse {
+  PerformanceEvaluation evaluation = 1;
+}
+
+message DeletePerformanceEvaluationRequest {
+  string id = 1;
+}
+
+message DeletePerformanceEvaluationResponse {
+  bool success = 1;
+}
+
+message ListPerformanceEvaluationsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string employee_id = 5;
+  string evaluator_id = 6;
+  string period_start = 7;
+  string period_end = 8;
+  PerformanceEvaluationStatus status = 9;
+}
+
+message ListPerformanceEvaluationsResponse {
+  repeated PerformanceEvaluation evaluations = 1;
+  string next_page_token = 2;
+}
+
+// Request/Response messages for Performance Targets
+message CreatePerformanceTargetRequest {
+  PerformanceTarget target = 1;
+}
+
+message CreatePerformanceTargetResponse {
+  PerformanceTarget target = 1;
+}
+
+message GetPerformanceTargetRequest {
+  string id = 1;
+}
+
+message GetPerformanceTargetResponse {
+  PerformanceTarget target = 1;
+}
+
+message UpdatePerformanceTargetRequest {
+  PerformanceTarget target = 1;
+}
+
+message UpdatePerformanceTargetResponse {
+  PerformanceTarget target = 1;
+}
+
+message DeletePerformanceTargetRequest {
+  string id = 1;
+}
+
+message DeletePerformanceTargetResponse {
+  bool success = 1;
+}
+
+message ListPerformanceTargetsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  string employee_id = 5;
+  string department_id = 6;
+  string period_start = 7;
+  string period_end = 8;
+  PerformanceTargetStatus status = 9;
+}
+
+message ListPerformanceTargetsResponse {
+  repeated PerformanceTarget targets = 1;
+  string next_page_token = 2;
+}

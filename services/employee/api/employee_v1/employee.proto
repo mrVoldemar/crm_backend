@@ -3,7 +3,7 @@ syntax = "proto3";
 package employee;
 option go_package = "./api";
 import "google/api/annotations.proto";
-
+import "org_structure.proto";
 // Employee service for managing employee information
 service EmployeeService {
   rpc CreateEmployee(CreateEmployeeRequest) returns (CreateEmployeeResponse) {
@@ -101,14 +101,6 @@ enum Role {
 message Permission {
   string resource = 1; // Resource name
   repeated string actions = 2; // Allowed actions (read, write, delete, etc.)
-}
-
-// Department with hierarchy support
-message Department {
-  string id = 1;
-  string name = 2;
-  string parent_department_id = 3; // For hierarchy support
-  repeated Department sub_departments = 4;
 }
 
 // Request/Response messages
