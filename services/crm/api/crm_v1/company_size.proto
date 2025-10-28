@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Company Size catalog
+service CompanySizeService {
+  rpc CreateCompanySize(CreateCompanySizeRequest) returns (CreateCompanySizeResponse) {
+    option (google.api.http) = {
+      post: "/v1/catalog/company-sizes"
+      body: "company_size"
+    };
+  }
+  rpc GetCompanySize(GetCompanySizeRequest) returns (GetCompanySizeResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/company-sizes/{id}"
+    };
+  }
+  rpc UpdateCompanySize(UpdateCompanySizeRequest) returns (UpdateCompanySizeResponse) {
+    option (google.api.http) = {
+      patch: "/v1/catalog/company-sizes/{company_size.id}"
+      body: "company_size"
+    };
+  }
+  rpc DeleteCompanySize(DeleteCompanySizeRequest) returns (DeleteCompanySizeResponse) {
+    option (google.api.http) = {
+      delete: "/v1/catalog/company-sizes/{id}"
+    };
+  }
+  rpc ListCompanySizes(ListCompanySizesRequest) returns (ListCompanySizesResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/company-sizes"
+    };
+  }
+}
+
+message CompanySizeItem {
+  string id = 1;
+  string name = 2;           // e.g., "Малый", "Средний", "Крупный"
+  string description = 3;    // Optional
+  bool is_active = 4;
+  int32 sort_order = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message CreateCompanySizeRequest { CompanySizeItem company_size = 1; }
+message CreateCompanySizeResponse { CompanySizeItem company_size = 1; }
+message GetCompanySizeRequest { string id = 1; }
+message GetCompanySizeResponse { CompanySizeItem company_size = 1; }
+message UpdateCompanySizeRequest { CompanySizeItem company_size = 1; }
+message UpdateCompanySizeResponse { CompanySizeItem company_size = 1; }
+message DeleteCompanySizeRequest { string id = 1; }
+message DeleteCompanySizeResponse { bool success = 1; }
+
+message ListCompanySizesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;
+  bool only_active = 4;
+  string order_by = 5;
+}
+message ListCompanySizesResponse {
+  repeated CompanySizeItem company_sizes = 1;
+  string next_page_token = 2;
+}

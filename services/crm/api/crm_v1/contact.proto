@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Contact service for managing CRM contacts
+service ContactService {
+  rpc CreateContact(CreateContactRequest) returns (CreateContactResponse) {
+    option (google.api.http) = {
+      post: "/v1/contacts"
+      body: "contact"
+    };
+  }
+
+  rpc GetContact(GetContactRequest) returns (GetContactResponse) {
+    option (google.api.http) = {
+      get: "/v1/contacts/{id}"
+    };
+  }
+
+  rpc UpdateContact(UpdateContactRequest) returns (UpdateContactResponse) {
+    option (google.api.http) = {
+      patch: "/v1/contacts/{contact.id}"
+      body: "contact"
+    };
+  }
+
+  rpc DeleteContact(DeleteContactRequest) returns (DeleteContactResponse) {
+    option (google.api.http) = {
+      delete: "/v1/contacts/{id}"
+    };
+  }
+
+  // List with search and filtering
+  rpc ListContacts(ListContactsRequest) returns (ListContactsResponse) {
+    option (google.api.http) = {
+      get: "/v1/contacts"
+    };
+  }
+}
+
+// Section: Core Information
+message Contact {
+  // System fields
+  string id = 1; // ID
+  string manager_id = 2; // Responsible manager (employee ID)
+  string created_at = 3; // Creation timestamp (ISO8601)
+  string updated_at = 4; // Update timestamp (ISO8601)
+
+  // Basic
+  string first_name = 10; // Required
+  string last_name = 11; // Required
+  repeated PhoneNumber phones = 12; // At least one can be provided
+  repeated EmailAddress emails = 13;
+  string photo = 14; // Avatar URL
+
+  // Work
+  string company_id = 20; // Reference to Company entity
+  string position = 21; // Job title
+
+  // Social networks
+  repeated SocialLink social_links = 30; // LinkedIn, Telegram, VK, etc. (icon + URL)
+
+  // Additional
+  string date_of_birth = 40; // YYYY-MM-DD (ISO8601 date)
+  Gender gender = 41; // Gender
+  string address = 42;
+  string contact_category_id = 43; // Reference to Contact Category catalog
+  string private_note = 44; // Visible only to creator (server-side enforcement)
+}
+
+// Phone number with type
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2; // WORK | MOBILE
+}
+
+// Email address with type
+message EmailAddress {
+  string email = 1;
+  EmailType type = 2; // WORK | PERSONAL
+}
+
+// Social link with optional icon and known type
+message SocialLink {
+  SocialType type = 1; // LINKEDIN | TELEGRAM | VK | OTHER
+  string icon = 2; // Icon identifier or URL
+  string url = 3;  // Link URL
+}
+
+// Enums
+enum PhoneType {
+  PHONE_TYPE_UNSPECIFIED = 0;
+  PHONE_TYPE_WORK = 1;
+  PHONE_TYPE_MOBILE = 2;
+}
+
+enum EmailType {
+  EMAIL_TYPE_UNSPECIFIED = 0;
+  EMAIL_TYPE_WORK = 1;
+  EMAIL_TYPE_PERSONAL = 2;
+}
+
+enum Gender {
+  GENDER_UNSPECIFIED = 0;
+  GENDER_MALE = 1;
+  GENDER_FEMALE = 2;
+}
+
+enum SocialType {
+  SOCIAL_TYPE_UNSPECIFIED = 0;
+  SOCIAL_TYPE_LINKEDIN = 1;
+  SOCIAL_TYPE_TELEGRAM = 2;
+  SOCIAL_TYPE_VK = 3;
+  SOCIAL_TYPE_OTHER = 4;
+}
+
+// Requests/Responses
+message CreateContactRequest {
+  Contact contact = 1;
+}
+
+message CreateContactResponse {
+  Contact contact = 1;
+}
+
+message GetContactRequest {
+  string id = 1;
+}
+
+message GetContactResponse {
+  Contact contact = 1;
+}
+
+message UpdateContactRequest {
+  Contact contact = 1;
+}
+
+message UpdateContactResponse {
+  Contact contact = 1;
+}
+
+message DeleteContactRequest {
+  string id = 1;
+}
+
+message DeleteContactResponse {
+  bool success = 1;
+}
+
+message ListContactsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // Full-text search across name, company, emails, phones, etc.
+  string query = 3; // e.g., "john acme +mobile"
+
+  // Filters
+  string company_id = 10;
+  string contact_category_id = 11;
+  string manager_id = 12;
+  Gender gender = 13;
+
+  // Sorting
+  string order_by = 20; // e.g., "last_name asc, first_name asc"
+}
+
+message ListContactsResponse {
+  repeated Contact contacts = 1;
+  string next_page_token = 2;
+}

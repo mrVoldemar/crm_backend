@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Company service for managing companies in CRM
+service CompanyService {
+  rpc CreateCompany(CreateCompanyRequest) returns (CreateCompanyResponse) {
+    option (google.api.http) = {
+      post: "/v1/companies"
+      body: "company"
+    };
+  }
+
+  rpc GetCompany(GetCompanyRequest) returns (GetCompanyResponse) {
+    option (google.api.http) = {
+      get: "/v1/companies/{id}"
+    };
+  }
+
+  rpc UpdateCompany(UpdateCompanyRequest) returns (UpdateCompanyResponse) {
+    option (google.api.http) = {
+      patch: "/v1/companies/{company.id}"
+      body: "company"
+    };
+  }
+
+  rpc DeleteCompany(DeleteCompanyRequest) returns (DeleteCompanyResponse) {
+    option (google.api.http) = {
+      delete: "/v1/companies/{id}"
+    };
+  }
+
+  // List with search and filtering
+  rpc ListCompanies(ListCompaniesRequest) returns (ListCompaniesResponse) {
+    option (google.api.http) = {
+      get: "/v1/companies"
+    };
+  }
+}
+
+// Company card
+message Company {
+  // System fields
+  string id = 1;               // ID
+  string manager_id = 2;       // Responsible manager (employee/user id)
+  string created_at = 3;       // Creation timestamp (ISO8601)
+  string updated_at = 4;       // Update timestamp (ISO8601)
+
+  // Basic
+  string name = 10;            // Required: company name
+  string phone = 11;
+  string email = 12;
+  string website = 13;
+  string legal_address = 14;   // Legal address
+  string actual_address = 15;  // Actual address
+
+  // Classification
+  string industry_id = 20;     // Industry ID (references Industry catalog)
+  string company_size_id = 21; // Company Size ID (references Company Size catalog)
+  string inn = 22;             // Tax ID (INN)
+  string kpp = 23;             // Tax registration reason code (KPP)
+
+  // Related contacts
+  repeated string contact_ids = 30; // IDs of related contacts
+}
+
+// Enums removed in favor of catalog-based IDs
+
+// Requests / Responses
+message CreateCompanyRequest {
+  Company company = 1;
+}
+
+message CreateCompanyResponse {
+  Company company = 1;
+}
+
+message GetCompanyRequest {
+  string id = 1;
+}
+
+message GetCompanyResponse {
+  Company company = 1;
+}
+
+message UpdateCompanyRequest {
+  Company company = 1;
+}
+
+message UpdateCompanyResponse {
+  Company company = 1;
+}
+
+message DeleteCompanyRequest {
+  string id = 1;
+}
+
+message DeleteCompanyResponse {
+  bool success = 1;
+}
+
+message ListCompaniesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // Full-text search (name, phone, email, website, INN/KPP, address)
+  string query = 3; // e.g., "acme +inn:77012345"
+
+  // Filters
+  string industry_id = 10;
+  string company_size_id = 11;
+  string manager_id = 12;
+
+  // Sorting
+  string order_by = 20; // e.g., "name asc, created_at desc"
+}
+
+message ListCompaniesResponse {
+  repeated Company companies = 1;
+  string next_page_token = 2;
+}

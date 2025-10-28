@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Lead service for managing incoming leads in CRM
+service LeadService {
+  rpc CreateLead(CreateLeadRequest) returns (CreateLeadResponse) {
+    option (google.api.http) = {
+      post: "/v1/leads"
+      body: "lead"
+    };
+  }
+
+  rpc GetLead(GetLeadRequest) returns (GetLeadResponse) {
+    option (google.api.http) = {
+      get: "/v1/leads/{id}"
+    };
+  }
+
+  rpc UpdateLead(UpdateLeadRequest) returns (UpdateLeadResponse) {
+    option (google.api.http) = {
+      patch: "/v1/leads/{lead.id}"
+      body: "lead"
+    };
+  }
+
+  rpc DeleteLead(DeleteLeadRequest) returns (DeleteLeadResponse) {
+    option (google.api.http) = {
+      delete: "/v1/leads/{id}"
+    };
+  }
+
+  // List with search and filtering
+  rpc ListLeads(ListLeadsRequest) returns (ListLeadsResponse) {
+    option (google.api.http) = {
+      get: "/v1/leads"
+    };
+  }
+}
+
+// Lead card
+message Lead {
+  // System fields
+  string id = 1;               // ID
+  string manager_id = 2;       // Responsible manager (owner)
+  string created_at = 3;       // Creation timestamp (ISO8601)
+  string updated_at = 4;       // Update timestamp (ISO8601)
+
+  // Basic
+  string contact_name = 10;    // Required: contact person name
+  string phone = 11;
+  string email = 12;
+  string company_name = 13;    // Lead's company name (free text)
+
+  // Qualification
+  LeadStatus status = 20;      // Status
+  double budget = 21;          // Budget amount (optional)
+  string budget_currency = 22; // Currency code (e.g., "RUB", "USD")
+  string source_id = 23;       // Lead Source ID (references Lead Source catalog)
+
+  // Description
+  string notes = 30;           // Free-form description of the request
+}
+
+// Enums
+enum LeadStatus {
+  LEAD_STATUS_UNSPECIFIED = 0;
+  LEAD_STATUS_NEW = 1;           // Новый
+  LEAD_STATUS_IN_PROGRESS = 2;   // В работе
+  LEAD_STATUS_QUALIFIED = 3;     // Квалифицирован
+  LEAD_STATUS_INVALID = 4;       // Невалид
+  LEAD_STATUS_REJECTED = 5;      // Отклонен
+}
+
+// Requests / Responses
+message CreateLeadRequest {
+  Lead lead = 1;
+}
+
+message CreateLeadResponse {
+  Lead lead = 1;
+}
+
+message GetLeadRequest {
+  string id = 1;
+}
+
+message GetLeadResponse {
+  Lead lead = 1;
+}
+
+message UpdateLeadRequest {
+  Lead lead = 1;
+}
+
+message UpdateLeadResponse {
+  Lead lead = 1;
+}
+
+message DeleteLeadRequest {
+  string id = 1;
+}
+
+message DeleteLeadResponse {
+  bool success = 1;
+}
+
+message ListLeadsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // Full-text search across contact_name, company_name, phone, email, notes
+  string query = 3; // e.g., "ivan +acme +phone:7900"
+
+  // Filters
+  LeadStatus status = 10;
+  string source_id = 11;
+  string manager_id = 12;
+  double min_budget = 13;
+  double max_budget = 14;
+
+  // Sorting
+  string order_by = 20; // e.g., "created_at desc, contact_name asc"
+}
+
+message ListLeadsResponse {
+  repeated Lead leads = 1;
+  string next_page_token = 2;
+}

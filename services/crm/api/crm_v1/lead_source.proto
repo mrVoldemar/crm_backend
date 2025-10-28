@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package crm;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+
+// Lead Source catalog
+service LeadSourceService {
+  rpc CreateLeadSource(CreateLeadSourceRequest) returns (CreateLeadSourceResponse) {
+    option (google.api.http) = {
+      post: "/v1/catalog/lead-sources"
+      body: "lead_source"
+    };
+  }
+  rpc GetLeadSource(GetLeadSourceRequest) returns (GetLeadSourceResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/lead-sources/{id}"
+    };
+  }
+  rpc UpdateLeadSource(UpdateLeadSourceRequest) returns (UpdateLeadSourceResponse) {
+    option (google.api.http) = {
+      patch: "/v1/catalog/lead-sources/{lead_source.id}"
+      body: "lead_source"
+    };
+  }
+  rpc DeleteLeadSource(DeleteLeadSourceRequest) returns (DeleteLeadSourceResponse) {
+    option (google.api.http) = {
+      delete: "/v1/catalog/lead-sources/{id}"
+    };
+  }
+  rpc ListLeadSources(ListLeadSourcesRequest) returns (ListLeadSourcesResponse) {
+    option (google.api.http) = {
+      get: "/v1/catalog/lead-sources"
+    };
+  }
+}
+
+message LeadSource {
+  string id = 1;
+  string name = 2;           // e.g., "Сайт", "Рекомендация", "Соц. сети"
+  string description = 3;    // Optional
+  bool is_active = 4;
+  int32 sort_order = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message CreateLeadSourceRequest { LeadSource lead_source = 1; }
+message CreateLeadSourceResponse { LeadSource lead_source = 1; }
+message GetLeadSourceRequest { string id = 1; }
+message GetLeadSourceResponse { LeadSource lead_source = 1; }
+message UpdateLeadSourceRequest { LeadSource lead_source = 1; }
+message UpdateLeadSourceResponse { LeadSource lead_source = 1; }
+message DeleteLeadSourceRequest { string id = 1; }
+message DeleteLeadSourceResponse { bool success = 1; }
+
+message ListLeadSourcesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string query = 3;
+  bool only_active = 4;
+  string order_by = 5;
+}
+message ListLeadSourcesResponse {
+  repeated LeadSource lead_sources = 1;
+  string next_page_token = 2;
+}
