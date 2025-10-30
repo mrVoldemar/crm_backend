@@ -1,0 +1,25 @@
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:17.5-alpine3.20
+    container_name: ${COMPOSE_PROJECT_NAME}-postgres
+    environment:
+      POSTGRES_DB: ${PG_DATABASE_NAME:-default_db}
+      # You should definitely change the password in production
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-!ChangeMe!}
+      POSTGRES_USER: ${PG_USER:-postgres}
+      TZ: "${SERVER_TIMEZONE}"
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - ${COMPOSE_NETWORK_NAME}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

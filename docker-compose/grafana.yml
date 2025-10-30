@@ -1,0 +1,26 @@
+volumes:
+  prometheus_data:
+  grafana_data:
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    container_name: ${COMPOSE_PROJECT_NAME}-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    networks:
+      - ${COMPOSE_NETWORK_NAME}
+
+  grafana:
+    image: grafana/grafana-oss:10.0.3
+    container_name: ${COMPOSE_PROJECT_NAME}-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ${COMPOSE_NETWORK_NAME}
