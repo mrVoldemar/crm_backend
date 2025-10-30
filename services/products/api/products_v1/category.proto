@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package products;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+// Category service for managing product categories
+service CategoryService {
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/categories"
+      body: "category"
+    };
+  }
+  rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/categories/{id}"
+    };
+  }
+  rpc GetCategoryBySlug(GetCategoryBySlugRequest) returns (GetCategoryBySlugResponse) {
+    option (google.api.http) = {
+      get: "/v1/categories/slug/{slug}"
+    };
+  }
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/categories/{category.id}"
+      body: "category"
+    };
+  }
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/categories/{id}"
+    };
+  }
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/categories"
+    };
+  }
+  rpc GetCategoryTree(GetCategoryTreeRequest) returns (GetCategoryTreeResponse) {
+    option (google.api.http) = {
+      get: "/v1/categories/tree"
+    };
+  }
+}
+
+// Category represents a product category with hierarchy support
+message Category {
+  // System fields
+  string id = 1; // Unique identifier
+  string created_at = 2; // Record creation date
+  string updated_at = 3; // Last modification date
+  
+  // Basic information
+  string name = 4; // Category name (required)
+  string slug = 5; // URL-friendly identifier (required, unique)
+  string image = 6; // Category image URL
+  string description = 7; // Category description
+  
+  // Hierarchy
+  string parent_category_id = 8; // Parent category ID for hierarchy support
+  repeated Category sub_categories = 9; // Nested subcategories
+  int32 level = 10; // Depth level in hierarchy (0 = root)
+  
+  // Display and ordering
+  int32 sort_order = 11; // Sort order for display
+  bool is_active = 12; // Whether category is active/visible
+  
+  // Statistics (read-only)
+  int32 products_count = 13; // Number of products in this category
+  int32 total_products_count = 14; // Total products including subcategories
+  
+  // Additional metadata
+  string icon = 15; // Icon URL or icon class name
+  string banner_image = 16; // Banner image for category page
+}
+
+// Request/Response messages
+
+message CreateCategoryRequest {
+  Category category = 1;
+}
+
+message CreateCategoryResponse {
+  Category category = 1;
+}
+
+message GetCategoryRequest {
+  string id = 1;
+}
+
+message GetCategoryResponse {
+  Category category = 1;
+}
+
+message GetCategoryBySlugRequest {
+  string slug = 1;
+}
+
+message GetCategoryBySlugResponse {
+  Category category = 1;
+}
+
+message UpdateCategoryRequest {
+  Category category = 1;
+}
+
+message UpdateCategoryResponse {
+  Category category = 1;
+}
+
+message DeleteCategoryRequest {
+  string id = 1;
+  bool cascade = 2; // If true, delete all subcategories and products
+}
+
+message DeleteCategoryResponse {
+  bool success = 1;
+}
+
+message ListCategoriesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3; // Filter expression
+  string order_by = 4; // Sort order
+  string parent_category_id = 5; // Filter by parent category
+  bool only_active = 6; // Show only active categories
+  int32 level = 7; // Filter by hierarchy level
+}
+
+message ListCategoriesResponse {
+  repeated Category categories = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetCategoryTreeRequest {
+  string root_category_id = 1; // If empty, gets the entire tree
+  int32 max_depth = 2; // Maximum depth to fetch (0 = unlimited)
+  bool only_active = 3; // Include only active categories
+}
+
+message GetCategoryTreeResponse {
+  repeated Category categories = 1; // Top level categories with nested subcategories
+}
