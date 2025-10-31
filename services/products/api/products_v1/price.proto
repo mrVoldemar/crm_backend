@@ -1,0 +1,163 @@
+syntax = "proto3";
+
+package products;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+// Service to manage price types (e.g., retail, wholesale, VIP)
+service PriceTypeService {
+  rpc CreatePriceType(CreatePriceTypeRequest) returns (CreatePriceTypeResponse) {
+    option (google.api.http) = {
+      post: "/v1/price-types"
+      body: "price_type"
+    };
+  }
+  rpc GetPriceType(GetPriceTypeRequest) returns (GetPriceTypeResponse) {
+    option (google.api.http) = {
+      get: "/v1/price-types/{id}"
+    };
+  }
+  rpc GetPriceTypeByCode(GetPriceTypeByCodeRequest) returns (GetPriceTypeByCodeResponse) {
+    option (google.api.http) = {
+      get: "/v1/price-types/code/{code}"
+    };
+  }
+  rpc UpdatePriceType(UpdatePriceTypeRequest) returns (UpdatePriceTypeResponse) {
+    option (google.api.http) = {
+      patch: "/v1/price-types/{price_type.id}"
+      body: "price_type"
+    };
+  }
+  rpc DeletePriceType(DeletePriceTypeRequest) returns (DeletePriceTypeResponse) {
+    option (google.api.http) = {
+      delete: "/v1/price-types/{id}"
+    };
+  }
+  rpc ListPriceTypes(ListPriceTypesRequest) returns (ListPriceTypesResponse) {
+    option (google.api.http) = {
+      get: "/v1/price-types"
+    };
+  }
+}
+
+// Service to manage product prices (values per price type and product)
+service PriceService {
+  rpc SetPrice(SetPriceRequest) returns (SetPriceResponse) {
+    option (google.api.http) = {
+      post: "/v1/prices"
+      body: "price"
+    };
+  }
+  rpc GetPrice(GetPriceRequest) returns (GetPriceResponse) {
+    option (google.api.http) = {
+      get: "/v1/prices/{id}"
+    };
+  }
+  rpc ListPrices(ListPricesRequest) returns (ListPricesResponse) {
+    option (google.api.http) = {
+      get: "/v1/prices"
+    };
+  }
+  rpc DeletePrice(DeletePriceRequest) returns (DeletePriceResponse) {
+    option (google.api.http) = {
+      delete: "/v1/prices/{id}"
+    };
+  }
+}
+
+// PriceType represents a pricing category
+message PriceType {
+  // System fields
+  string id = 1; // Unique identifier
+  string created_at = 2; // Record creation date
+  string updated_at = 3; // Last modification date
+
+  // Basic info
+  string name = 4; // Human-readable name (required)
+  string code = 5; // Machine-friendly unique code, e.g., RETAIL, WHOLESALE (required, unique)
+  string description = 6; // Optional description
+
+  // Behavior
+  bool is_default = 7; // Default price type
+  bool is_active = 8; // Active/visible
+  int32 priority = 9; // Ordering when selecting applicable price types
+
+  // Currency constraints (optional)
+  string currency = 10; // ISO 4217 code; if set, prices under this type should use this currency
+}
+
+// Price represents a product price for a given type
+message Price {
+  // System fields
+  string id = 1;
+  string created_at = 2;
+  string updated_at = 3;
+
+  // Relations
+  string product_id = 4; // Product ID
+  string price_type_id = 5; // PriceType ID
+
+  // Monetary values
+  int64 amount_minor = 6; // Amount in minor units (e.g., cents)
+  string currency = 7; // ISO 4217 currency code
+
+  // Validity and status
+  string valid_from = 8; // ISO date/datetime string
+  string valid_to = 9;   // ISO date/datetime string
+  bool is_active = 10;   // Whether this price is active
+
+  // Quantity-based pricing (optional)
+  int32 min_qty = 11; // Minimum quantity for this price to apply
+  int32 max_qty = 12; // Maximum quantity (0 or negative means unlimited)
+
+  // Additional fields
+  int64 old_amount_minor = 13; // Previous price in minor units (for reference/comparison)
+  string comment = 14; // Internal comment
+}
+
+// PriceType requests/responses
+message CreatePriceTypeRequest { PriceType price_type = 1; }
+message CreatePriceTypeResponse { PriceType price_type = 1; }
+message GetPriceTypeRequest { string id = 1; }
+message GetPriceTypeResponse { PriceType price_type = 1; }
+message GetPriceTypeByCodeRequest { string code = 1; }
+message GetPriceTypeByCodeResponse { PriceType price_type = 1; }
+message UpdatePriceTypeRequest { PriceType price_type = 1; }
+message UpdatePriceTypeResponse { PriceType price_type = 1; }
+message DeletePriceTypeRequest { string id = 1; }
+message DeletePriceTypeResponse { bool success = 1; }
+message ListPriceTypesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  bool only_active = 5;
+}
+message ListPriceTypesResponse {
+  repeated PriceType price_types = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// Price requests/responses
+message SetPriceRequest { Price price = 1; }
+message SetPriceResponse { Price price = 1; }
+message GetPriceRequest { string id = 1; }
+message GetPriceResponse { Price price = 1; }
+message ListPricesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3; // e.g., product_id = '...' AND price_type_id = '...'
+  string order_by = 4;
+  string product_id = 5; // Filter by product
+  string price_type_id = 6; // Filter by price type
+  bool only_active = 7; // Only active prices
+}
+message ListPricesResponse {
+  repeated Price prices = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message DeletePriceRequest { string id = 1; }
+message DeletePriceResponse { bool success = 1; }

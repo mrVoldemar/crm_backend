@@ -1,0 +1,232 @@
+syntax = "proto3";
+
+package products;
+option go_package = "./api";
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+import "products_v1/category.proto";
+import "products_v1/price.proto";
+import "products_v1/warehouse.proto";
+
+// Service for managing products
+service ProductService {
+  // Create a new product
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse) {
+    option (google.api.http) = {
+      post: "/v1/products"
+      body: "product"
+    };
+  }
+  
+  // Get a product by ID
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/products/{id}"
+    };
+  }
+  
+  // Get a product by SKU (article number)
+  rpc GetProductBySKU(GetProductBySKURequest) returns (GetProductBySKUResponse) {
+    option (google.api.http) = {
+      get: "/v1/products/sku/{sku}"
+    };
+  }
+  
+  // Get a product by slug (for URLs)
+  rpc GetProductBySlug(GetProductBySlugRequest) returns (GetProductBySlugResponse) {
+    option (google.api.http) = {
+      get: "/v1/products/slug/{slug}"
+    };
+  }
+  
+  // Update a product
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {
+    option (google.api.http) = {
+      patch: "/v1/products/{product.id}"
+      body: "product"
+    };
+  }
+  
+  // Delete a product
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/v1/products/{id}"
+    };
+  }
+  
+  // List products with filtering and pagination
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/products"
+    };
+  }
+  
+  // Batch get products by IDs
+  rpc BatchGetProducts(BatchGetProductsRequest) returns (BatchGetProductsResponse) {
+    option (google.api.http) = {
+      post: "/v1/products:batchGet"
+      body: "*"
+    };
+  }
+}
+
+// Product represents a sellable item in the system
+message Product {
+  // System fields
+  string id = 1;
+  string created_at = 2;
+  string updated_at = 3;
+  
+  // Basic information
+  string name = 4;                  // Product name (required)
+  string full_name = 5;             // Full name for documents
+  string sku = 6;                   // Unique SKU (required)
+  string catalog_number = 7;        // Catalog number
+  string short_description = 8;     // Short description (max 250 chars)
+  string description = 9;           // Full description (HTML)
+  string slug = 10;                 // URL-friendly slug
+  
+  // Status
+  bool is_active = 11;              // Whether the product is active
+  bool is_virtual = 12;             // Whether it's a virtual product
+  
+  // Categories
+  repeated Category categories = 13; // Product categories
+  string main_category_id = 14;     // Main category ID
+  
+  // Pricing
+  repeated Price prices = 15;       // Product prices by type
+  
+  // Inventory
+  int32 total_quantity = 16;        // Total available quantity across all warehouses
+  repeated Stock stocks = 17;       // Stock information per warehouse
+  
+  // Media
+  repeated ProductMedia media = 18;  // Product images and other media
+  
+  // Dimensions and weight
+  float weight = 19;                // in grams
+  float length = 20;                // in cm
+  float width = 21;                 // in cm
+  float height = 22;                // in cm
+  
+  // Additional attributes
+  map<string, string> attributes = 23; // Flexible attributes
+  
+  // Related products
+  repeated string related_product_ids = 24;
+  
+  // Audit fields
+  string created_by = 25;
+  string updated_by = 26;
+  
+  // Version for optimistic concurrency control
+  int32 version = 27;
+}
+
+// ProductMedia represents media associated with a product
+message ProductMedia {
+  string id = 1;
+  string url = 2;
+  string type = 3;  // 'image', 'video', 'document', etc.
+  string mime_type = 4;
+  string alt_text = 5;
+  int32 sort_order = 6;
+  bool is_main = 7; // Whether this is the main image
+  map<string, string> metadata = 8;
+}
+
+// Product requests/responses
+message CreateProductRequest {
+  Product product = 1;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+message GetProductRequest {
+  string id = 1;
+  bool include_prices = 2;      // Whether to include price information
+  bool include_stock = 3;       // Whether to include stock information
+  string warehouse_id = 4;      // Required if include_stock is true and you want stock for a specific warehouse
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+message GetProductBySKURequest {
+  string sku = 1;
+  bool include_prices = 2;
+  bool include_stock = 3;
+  string warehouse_id = 4;
+}
+
+message GetProductBySKUResponse {
+  Product product = 1;
+}
+
+message GetProductBySlugRequest {
+  string slug = 1;
+  bool include_prices = 2;
+  bool include_stock = 3;
+  string warehouse_id = 4;
+}
+
+message GetProductBySlugResponse {
+  Product product = 1;
+}
+
+message UpdateProductRequest {
+  Product product = 1;
+  google.protobuf.FieldMask update_mask = 2; // Field mask for partial updates
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+  bool force = 2;  // If true, will delete even if there are dependent records
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+}
+
+message ListProductsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  bool only_active = 5;
+  string category_id = 6;       // Filter by category
+  string search = 7;            // Search by name, SKU, or description
+  bool include_prices = 8;      // Whether to include price information
+  bool include_stock = 9;       // Whether to include stock information
+  string warehouse_id = 10;     // Required if include_stock is true
+  repeated string price_types = 11; // Specific price types to include
+  float min_price = 12;         // Filter by minimum price
+  float max_price = 13;         // Filter by maximum price
+  bool in_stock = 14;           // Only products with stock > 0
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message BatchGetProductsRequest {
+  repeated string ids = 1;      // Product IDs to fetch
+  bool include_prices = 2;
+  bool include_stock = 3;
+  string warehouse_id = 4;      // Required if include_stock is true
+}
+
+message BatchGetProductsResponse {
+  repeated Product products = 1;
+}

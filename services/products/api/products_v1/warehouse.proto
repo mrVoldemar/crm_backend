@@ -1,0 +1,266 @@
+syntax = "proto3";
+
+package products;
+option go_package = "./api";
+import "google/api/annotations.proto";
+
+// Service to manage warehouses
+service WarehouseService {
+  // Create a new warehouse
+  rpc CreateWarehouse(CreateWarehouseRequest) returns (CreateWarehouseResponse) {
+    option (google.api.http) = {
+      post: "/v1/warehouses"
+      body: "warehouse"
+    };
+  }
+  
+  // Get a warehouse by ID
+  rpc GetWarehouse(GetWarehouseRequest) returns (GetWarehouseResponse) {
+    option (google.api.http) = {
+      get: "/v1/warehouses/{id}"
+    };
+  }
+  
+  // Update an existing warehouse
+  rpc UpdateWarehouse(UpdateWarehouseRequest) returns (UpdateWarehouseResponse) {
+    option (google.api.http) = {
+      patch: "/v1/warehouses/{warehouse.id}"
+      body: "warehouse"
+    };
+  }
+  
+  // Delete a warehouse
+  rpc DeleteWarehouse(DeleteWarehouseRequest) returns (DeleteWarehouseResponse) {
+    option (google.api.http) = {
+      delete: "/v1/warehouses/{id}"
+    };
+  }
+  
+  // List all warehouses with filtering and pagination
+  rpc ListWarehouses(ListWarehousesRequest) returns (ListWarehousesResponse) {
+    option (google.api.http) = {
+      get: "/v1/warehouses"
+    };
+  }
+}
+
+// Service to manage product stock in warehouses
+service StockService {
+  // Update stock level for a product in a warehouse
+  rpc UpdateStock(UpdateStockRequest) returns (UpdateStockResponse) {
+    option (google.api.http) = {
+      post: "/v1/stocks"
+      body: "*"
+    };
+  }
+  
+  // Get current stock level for a product in a warehouse
+  rpc GetStock(GetStockRequest) returns (GetStockResponse) {
+    option (google.api.http) = {
+      get: "/v1/warehouses/{warehouse_id}/products/{product_id}"
+    };
+  }
+  
+  // Get stock levels for multiple products in a warehouse
+  rpc BatchGetStocks(BatchGetStocksRequest) returns (BatchGetStocksResponse) {
+    option (google.api.http) = {
+      post: "/v1/warehouses/{warehouse_id}/stocks:batchGet"
+      body: "*"
+    };
+  }
+  
+  // List stock movements (history)
+  rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse) {
+    option (google.api.http) = {
+      get: "/v1/stock-movements"
+    };
+  }
+}
+
+// Warehouse represents a physical location where products are stored
+message Warehouse {
+  // System fields
+  string id = 1;
+  string created_at = 2;
+  string updated_at = 3;
+  
+  // Basic information
+  string name = 4;
+  string code = 5;  // Unique code for the warehouse
+  string description = 6;
+  
+  // Location information
+  string address = 7;
+  string city = 8;
+  string region = 9;
+  string country = 10;
+  string postal_code = 11;
+  
+  // Contact information
+  string contact_person = 12;
+  string phone = 13;
+  string email = 14;
+  
+  // Status
+  bool is_active = 15;
+  string timezone = 16;  // Timezone of the warehouse
+  
+  // Additional metadata
+  map<string, string> metadata = 17;
+}
+
+// Stock represents the current stock level of a product in a warehouse
+message Stock {
+  // System fields
+  string id = 1;
+  string created_at = 2;
+  string updated_at = 3;
+  
+  // References
+  string warehouse_id = 4;
+  string product_id = 5;
+  
+  // Stock information
+  int32 quantity_available = 6;  // Available for sale/reservation
+  int32 quantity_reserved = 7;   // Reserved for orders
+  int32 quantity_on_hand = 8;    // Physically present
+  
+  // Additional information
+  string last_updated = 9;  // Timestamp of last update
+  string last_counted = 10; // Last physical count date
+  
+  // Status
+  bool is_active = 11;
+  
+  // Reorder information
+  int32 reorder_point = 12;  // Level at which to reorder
+  int32 reorder_quantity = 13; // Quantity to reorder
+}
+
+// StockMovement represents a change in stock level
+message StockMovement {
+  // System fields
+  string id = 1;
+  string created_at = 2;
+  
+  // References
+  string warehouse_id = 3;
+  string product_id = 4;
+  string user_id = 5;  // Who made the change
+  
+  // Movement details
+  int32 quantity_change = 6;  // Positive for incoming, negative for outgoing
+  string movement_type = 7;   // e.g., "purchase", "sale", "adjustment", "return"
+  string reference_id = 8;    // Reference to the source document (order, invoice, etc.)
+  string reference_type = 9;  // Type of the reference document
+  
+  // Before/after quantities
+  int32 quantity_before = 10;
+  int32 quantity_after = 11;
+  
+  // Additional information
+  string notes = 12;
+  map<string, string> metadata = 13;
+}
+
+// Warehouse requests/responses
+message CreateWarehouseRequest {
+  Warehouse warehouse = 1;
+}
+
+message CreateWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message GetWarehouseRequest {
+  string id = 1;
+}
+
+message GetWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message UpdateWarehouseRequest {
+  Warehouse warehouse = 1;
+}
+
+message UpdateWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message DeleteWarehouseRequest {
+  string id = 1;
+  bool force = 2;  // If true, will delete even if there is stock
+}
+
+message DeleteWarehouseResponse {
+  bool success = 1;
+}
+
+message ListWarehousesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+  bool only_active = 5;
+  string search = 6;  // Search by name, code, or address
+}
+
+message ListWarehousesResponse {
+  repeated Warehouse warehouses = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// Stock requests/responses
+message UpdateStockRequest {
+  string warehouse_id = 1;
+  string product_id = 2;
+  int32 quantity_change = 3;  // Positive for incoming, negative for outgoing
+  string movement_type = 4;   // e.g., "purchase", "sale", "adjustment"
+  string reference_id = 5;    // Optional reference to related document
+  string reference_type = 6;  // Type of the reference document
+  string notes = 7;           // Optional notes about the stock movement
+  map<string, string> metadata = 8;
+}
+
+message UpdateStockResponse {
+  Stock stock = 1;
+  StockMovement movement = 2;
+}
+
+message GetStockRequest {
+  string warehouse_id = 1;
+  string product_id = 2;
+}
+
+message GetStockResponse {
+  Stock stock = 1;
+}
+
+message BatchGetStocksRequest {
+  string warehouse_id = 1;
+  repeated string product_ids = 2;
+}
+
+message BatchGetStocksResponse {
+  repeated Stock stocks = 1;
+}
+
+message ListStockMovementsRequest {
+  string warehouse_id = 1;
+  string product_id = 2;
+  string movement_type = 3;
+  string reference_id = 4;
+  string start_date = 5;
+  string end_date = 6;
+  int32 page_size = 7;
+  string page_token = 8;
+  string order_by = 9;
+}
+
+message ListStockMovementsResponse {
+  repeated StockMovement movements = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
