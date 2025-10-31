@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package auth_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+
+option go_package = "github.com/mrVoldemar/crm_backend/services/auth/pkg/register_v1;register_v1";
+
+// Register service handles user registration
+service RegisterV1 {
+  // Register creates a new user account
+  rpc Register (RegisterRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/auth/v1/register"
+      body: "*"
+    };
+  }
+}
+
+// RegisterRequest contains user registration information
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  string position = 6;
+  string department = 7;
+  string avatar_url = 8;
+  google.protobuf.Timestamp hire_date = 9;
+  google.protobuf.Timestamp birth_date = 10;
+}
