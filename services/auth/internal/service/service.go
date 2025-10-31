@@ -12,6 +12,10 @@ type AuthService interface {
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }
 
+type RegisterService interface {
+	Register(ctx context.Context, user *model.UserRegister) (uint64, error)
+}
+
 type AccessService interface {
 	Check(ctx context.Context, endpoint string) error
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/config"
 	descAccess "github.com/mrVoldemar/crm_backend/services/auth/pkg/access_v1"
 	desc "github.com/mrVoldemar/crm_backend/services/auth/pkg/auth_v1"
+	descRegister "github.com/mrVoldemar/crm_backend/services/auth/pkg/register_v1"
 )
 
 type App struct {
@@ -78,6 +79,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	desc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
 	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessImpl(ctx))
+	descRegister.RegisterRegisterV1Server(a.grpcServer, a.serviceProvider.RegisterImpl(ctx))
 
 	return nil
 }

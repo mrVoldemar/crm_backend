@@ -2,21 +2,20 @@ package app
 
 import (
 	"context"
-	"github.com/mrVoldemar/crm_backend/services/auth/internal/api/access"
-	"github.com/mrVoldemar/crm_backend/services/auth/internal/api/auth"
-	"github.com/mrVoldemar/crm_backend/services/auth/internal/service"
 	"log"
 
+	"github.com/mrVoldemar/crm_backend/services/auth/internal/api/access"
+	"github.com/mrVoldemar/crm_backend/services/auth/internal/api/auth"
+	"github.com/mrVoldemar/crm_backend/services/auth/internal/api/register"
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/client/db"
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/client/db/pg"
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/client/db/transaction"
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/closer"
 	"github.com/mrVoldemar/crm_backend/services/auth/internal/config"
-	//"github.com/mrVoldemar/crm_backend/services/auth/internal/repository"
-	//noteRepository "github.com/mrVoldemar/crm_backend/services/auth/internal/repository/note"
-	//"github.com/mrVoldemar/crm_backend/services/auth/internal/service"
+	"github.com/mrVoldemar/crm_backend/services/auth/internal/service"
 	accessService "github.com/mrVoldemar/crm_backend/services/auth/internal/service/access"
 	authService "github.com/mrVoldemar/crm_backend/services/auth/internal/service/auth"
+	registerService "github.com/mrVoldemar/crm_backend/services/auth/internal/service/register"
 )
 
 type serviceProvider struct {
@@ -25,13 +24,14 @@ type serviceProvider struct {
 	jwtConfig  config.JwtConfig
 	dbClient   db.Client
 	txManager  db.TxManager
-	//noteRepository repository.NoteRepository
 
-	authService   service.AuthService
-	accessService service.AccessService
+	authService     service.AuthService
+	registerService service.RegisterService
+	accessService   service.AccessService
 
-	authImpl   *auth.Implementation
-	accessImpl *access.Implementation
+	authImpl     *auth.Implementation
+	registerImpl *register.Implementation
+	accessImpl   *access.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -113,19 +113,23 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 */
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
-		s.authService = authService.NewService(
-			s.JWTConfig(),
-		)
+		s.authService = authService.NewService(s.JWTConfig())
 	}
 
 	return s.authService
 }
 
+func (s *serviceProvider) RegisterService(ctx context.Context) service.RegisterService {
+	if s.registerService == nil {
+		s.registerService = registerService.NewService()
+	}
+
+	return s.registerService
+}
+
 func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
 	if s.accessService == nil {
-		s.accessService = accessService.NewService(
-			s.JWTConfig(),
-		)
+		s.accessService = accessService.NewService(s.JWTConfig())
 	}
 
 	return s.accessService
@@ -136,6 +140,14 @@ func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {
 	}
 
 	return s.authImpl
+}
+
+func (s *serviceProvider) RegisterImpl(ctx context.Context) *register.Implementation {
+	if s.registerImpl == nil {
+		s.registerImpl = register.NewImplementation(s.RegisterService(ctx))
+	}
+
+	return s.registerImpl
 }
 
 func (s *serviceProvider) AccessImpl(ctx context.Context) *access.Implementation {
