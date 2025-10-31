@@ -1,3 +1,6 @@
+volumes:
+  redis_data:
+      driver: local
 services:
   redis:
     image: redis:latest
@@ -9,7 +12,7 @@ services:
     ports:
       - "6380:6379"
     volumes:
-      - ./redisdata:/data
+      - redis_data:/data
     deploy:
       resources:
         limits:
